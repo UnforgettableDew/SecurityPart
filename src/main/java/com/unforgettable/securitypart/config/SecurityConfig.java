@@ -23,14 +23,16 @@ public class SecurityConfig {
     private final ApplicationUserDetailsService applicationUserDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final ApplicationOAuth2UserService oAuth2UserService;
+//    private final ApplicationOAuth2UserService oAuth2UserService;
 
     @Autowired
-    public SecurityConfig(ApplicationUserDetailsService applicationUserDetailsService, PasswordEncoder passwordEncoder, JwtAuthenticationFilter jwtAuthenticationFilter, ApplicationOAuth2UserService oAuth2UserService) {
+    public SecurityConfig(ApplicationUserDetailsService applicationUserDetailsService,
+                          PasswordEncoder passwordEncoder,
+                          JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.applicationUserDetailsService = applicationUserDetailsService;
         this.passwordEncoder = passwordEncoder;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-        this.oAuth2UserService = oAuth2UserService;
+//        this.oAuth2UserService = oAuth2UserService;
     }
 
     @Bean
@@ -55,9 +57,9 @@ public class SecurityConfig {
                     .invalidateHttpSession(true)
                     .deleteCookies("JSESSIONID")
                     .logoutSuccessUrl("/greeting")
-                    .logoutSuccessHandler(((request, response, authentication) -> SecurityContextHolder.clearContext()))
-                .and()
-                .oauth2Login().userInfoEndpoint().userService(oAuth2UserService);
+                    .logoutSuccessHandler(((request, response, authentication) -> SecurityContextHolder.clearContext()));
+//                .and()
+//                .oauth2Login().userInfoEndpoint().userService(oAuth2UserService);
         return httpSecurity.build();
     }
 

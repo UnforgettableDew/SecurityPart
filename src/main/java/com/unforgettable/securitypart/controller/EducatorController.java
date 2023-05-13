@@ -1,6 +1,7 @@
 package com.unforgettable.securitypart.controller;
 
 import com.unforgettable.securitypart.dto.CourseDTO;
+import com.unforgettable.securitypart.dto.LaboratoryWorkDTO;
 import com.unforgettable.securitypart.dto.StudentDTO;
 import com.unforgettable.securitypart.entity.Course;
 import com.unforgettable.securitypart.entity.Educator;
@@ -54,6 +55,13 @@ public class EducatorController {
         return educatorService.getStudentsWhoPassedTask(request, courseId, taskId);
     }
 
+    @GetMapping("/courses/{courseId}/student/{studentId}/lab/{labId}")
+    public LaboratoryWorkDTO getStudentLaboratoryWork(HttpServletRequest request,
+                                                      @PathVariable Long courseId,
+                                                      @PathVariable Long studentId,
+                                                      @PathVariable Long labId){
+        return educatorService.getLaboratoryWorkByCourseAndStudent(request, courseId, studentId, labId);
+    }
     @GetMapping("/courses/{courseId}/stats")
     public Map<String, Object> getCourseStats(HttpServletRequest request,
                                               @PathVariable Long courseId) {
@@ -61,9 +69,16 @@ public class EducatorController {
     }
 
     @GetMapping("/courses/{courseId}/unchecked-lw")
-    public List<StudentDTO> getStudentsWithUncheckedLW(HttpServletRequest request,
-                                                       @PathVariable Long courseId) {
-        return educatorService.getStudentsWithUncheckedLW(request, courseId);
+    public List<StudentDTO> getStudentsWithUncheckedLabs(HttpServletRequest request,
+                                                         @PathVariable Long courseId) {
+        return educatorService.getStudentsWithUncheckedLabs(request, courseId);
+    }
+    @GetMapping("/courses/{courseId}/student/{studentId}/lab/{labId}/commits")
+    public List<Object> getStudentLabCommits(HttpServletRequest request,
+                                             @PathVariable Long courseId,
+                                             @PathVariable Long studentId,
+                                             @PathVariable Long labId){
+        return educatorService.getCommitList(request, courseId, studentId, labId);
     }
 
     @PostMapping("/course/create")

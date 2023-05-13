@@ -22,7 +22,7 @@ public interface LaboratoryWorkRepository extends JpaRepository<LaboratoryWork, 
                                                                              Long courseId,
                                                                              Long LWId);
     @Query("select new com.unforgettable.securitypart.dto.LaboratoryWorkDTO(" +
-            "lw.id, lw.score, lw.isPassed, lw.githubReference) from LaboratoryWork lw " +
+            "lw.id, lw.score, lw.isPassed) from LaboratoryWork lw " +
             "join lw.task t where lw.student.id=:studentId and t.id=:taskId and t.course.id=:courseId")
     LaboratoryWorkDTO findLaboratoryWorkByStudentIdCourseIdTaskId(Long studentId, Long courseId, Long taskId);
 
@@ -43,4 +43,7 @@ public interface LaboratoryWorkRepository extends JpaRepository<LaboratoryWork, 
     @Query("select avg(lw.score) from LaboratoryWork lw " +
             "where lw.task.course.id=:courseId and lw.task.id=:taskId")
     Float avgScoreForLWByCourseAndTask(Long courseId, Long taskId);
+
+    @Query("select lw.githubReference from LaboratoryWork lw where lw.id=:labId")
+    String findGithubReferenceByLabId(Long labId);
 }

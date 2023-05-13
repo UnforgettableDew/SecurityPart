@@ -29,7 +29,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
             "s.id, s.firstname, s.lastname, s.group) from Student s " +
             "join s.laboratoryWorks lw " +
             "where lw.isPassed=false and lw.task.course.id=:courseId")
-    List<StudentDTO> findStudentWithUncheckedLW(Long courseId);
+    List<StudentDTO> findStudentWithUncheckedLabs(Long courseId);
     @Query("select new com.unforgettable.securitypart.dto.StudentDTO(" +
             "s.id, s.firstname, s.lastname, s.group, s.email, s.age, s.registrationDate, s.telegramContact)" +
             " from Student s join s.courses c" +

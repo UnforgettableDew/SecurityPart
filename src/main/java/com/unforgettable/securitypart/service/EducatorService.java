@@ -8,6 +8,7 @@ import com.unforgettable.securitypart.entity.Course;
 import com.unforgettable.securitypart.entity.Educator;
 import com.unforgettable.securitypart.entity.Task;
 import com.unforgettable.securitypart.entity.UserEntity;
+import com.unforgettable.securitypart.feign.GithubFeign;
 import com.unforgettable.securitypart.repository.*;
 import com.unforgettable.securitypart.utils.JwtUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,13 +29,17 @@ public class EducatorService {
     private final TaskRepository taskRepository;
     private final JwtUtils jwtUtils;
     private final JwtService jwtService;
+    private final GithubFeign githubFeign;
 
     @Autowired
     public EducatorService(CourseRepository courseRepository,
                            EducatorRepository educatorRepository,
                            StudentRepository studentRepository,
                            LaboratoryWorkRepository laboratoryWorkRepository,
-                           TaskRepository taskRepository, JwtUtils jwtUtils, JwtService jwtService) {
+                           TaskRepository taskRepository,
+                           JwtUtils jwtUtils,
+                           JwtService jwtService,
+                           GithubFeign githubFeign) {
         this.courseRepository = courseRepository;
         this.educatorRepository = educatorRepository;
         this.studentRepository = studentRepository;
@@ -42,6 +47,7 @@ public class EducatorService {
         this.taskRepository = taskRepository;
         this.jwtUtils = jwtUtils;
         this.jwtService = jwtService;
+        this.githubFeign = githubFeign;
     }
 
     public List<CourseDTO> getEducatorCourses(HttpServletRequest request) {
@@ -127,6 +133,33 @@ public class EducatorService {
         return students;
     }
 
+    public LaboratoryWorkDTO getLaboratoryWorkByCourseAndStudent(HttpServletRequest request,
+                                                                 Long courseId,
+                                                                 Long studentId,
+                                                                 Long labId){
+        Long educatorId = jwtUtils.getEducatorId(request);
+
+        Long educatorCourseId = educatorRepository.findEducatorIdByCourse(courseId);
+        if(!educatorCourseId.equals(educatorId))
+            return null;
+
+        List<Long> studentCourseIdList = studentRepository.findStudentIdByCourse(courseId);
+
+        for (Long studentCourseId : studentCourseIdList) {
+            if (studentCourseId.equals(studentId)) {
+                LaboratoryWorkDTO laboratoryWork = laboratoryWorkRepository
+                        .findLaboratoryWorksByStudentIdAndCourseIdAndLWId(
+                                studentId,
+                                courseId,
+                                labId);
+                laboratoryWork.setTask(taskRepository.findTaskByLaboratoryWorkId(labId));
+
+                return laboratoryWork;
+            }
+        }
+        return null;
+    }
+
     public Map<String, Object> courseStats(HttpServletRequest request, Long courseId){
         Long educatorId = jwtUtils.getEducatorId(request);
 
@@ -156,15 +189,15 @@ public class EducatorService {
         return stats;
     }
 
-    public List<StudentDTO> getStudentsWithUncheckedLW(HttpServletRequest request,
-                                                       Long courseId){
+    public List<StudentDTO> getStudentsWithUncheckedLabs(HttpServletRequest request,
+                                                         Long courseId){
         Long educatorId = jwtUtils.getEducatorId(request);
 
         Long educatorCourseId = educatorRepository.findEducatorIdByCourse(courseId);
         if(!educatorCourseId.equals(educatorId))
             return null;
 
-        List<StudentDTO> students = studentRepository.findStudentWithUncheckedLW(courseId);
+        List<StudentDTO> students = studentRepository.findStudentWithUncheckedLabs(courseId);
 
         for(StudentDTO student:students){
             List<LaboratoryWorkDTO> laboratoryWorks = laboratoryWorkRepository.
@@ -177,6 +210,29 @@ public class EducatorService {
         }
 
         return students;
+    }
+
+    public List<Object> getCommitList(HttpServletRequest request,
+                                      Long courseId, Long studentId,
+                                      Long labId){
+        Long educatorId = jwtUtils.getEducatorId(request);
+
+        Long educatorCourseId = educatorRepository.findEducatorIdByCourse(courseId);
+        if(!educatorCourseId.equals(educatorId))
+            return null;
+
+        List<Long> studentCourseIdList = studentRepository.findStudentIdByCourse(courseId);
+
+        for (Long studentCourseId : studentCourseIdList) {
+            if (studentCourseId.equals(studentId)) {
+                String githubReference = laboratoryWorkRepository.findGithubReferenceByLabId(labId);
+                String[] parts = githubReference.split("/");
+                String username = parts[parts.length - 2];
+                String repo = parts[parts.length - 1];
+                return githubFeign.getAllCommits(username, repo);
+            }
+        }
+        return null;
     }
     public void createCourse(HttpServletRequest request, Course course){
         Long educatorId = jwtUtils.getEducatorId(request);
