@@ -2,11 +2,11 @@ version: '3'
 services:
   postgres:
     image: 'postgres:latest'
-    container_name: security_diploma
+    container_name: diploma_database
     environment:
       POSTGRES_USER: unforgettable
       POSTGRES_PASSWORD: 27092100
-      POSTGRES_DB: security_diploma
+      POSTGRES_DB: diploma_database
     #    volumes:
     #      - postgres:/data/postgres
     ports:

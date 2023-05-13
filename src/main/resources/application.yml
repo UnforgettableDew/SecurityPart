@@ -1,22 +1,37 @@
 server:
   port: 8080
+  servlet:
+    context-path: /api/v1
 spring:
   application:
-    name: security_diploma
+    name: diploma_database
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: 728f23b7c6b6affc6049
+            client-secret: ab69ec06c6cf0855850f6e194e23b0172d0090a8
   datasource:
     username: 'unforgettable'
     password: '27092100'
-    url: jdbc:postgresql://localhost:5432/security_diploma
+    url: jdbc:postgresql://localhost:5432/diploma_database
   flyway:
     enabled: true
-    url: jdbc:postgresql://localhost:5432/security_diploma
+    url: jdbc:postgresql://localhost:5432/diploma_database
     user: 'unforgettable'
     password: '27092100'
   jpa:
-    hibernate:
-      ddl-auto: validate
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     show-sql: true
+application:
+  security:
+    jwt:
+      secret-key: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      access-token:
+        expiration: 6000000 # 86400000 # a day
+      refresh-token:
+        expiration: 604800000 # 7 days

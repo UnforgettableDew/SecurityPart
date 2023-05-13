@@ -70,7 +70,7 @@ public class ApplicationUser implements UserDetails {
 
     public static ApplicationUser parseEntityUser(UserEntity userEntity) {
         return new ApplicationUser(
-                Set.of(new SimpleGrantedAuthority(userEntity.getRole().name())),
+                Set.of(new SimpleGrantedAuthority("ROLE_"+userEntity.getRole().name())),
                 userEntity.getPassword(),
                 userEntity.getUsername(),
                 true,
