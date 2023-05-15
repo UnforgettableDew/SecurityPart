@@ -23,7 +23,7 @@ create table educator
     age              int,
     email            varchar(64),
     telegram_contact varchar(64),
-    user_id bigint,
+    user_id bigint unique,
     foreign key (user_id) references users(id)
         on delete cascade
         on update cascade
@@ -62,7 +62,7 @@ create table student
     email            varchar(64),
     telegram_contact varchar(64),
     student_group    varchar(64),
-    user_id bigint,
+    user_id bigint unique,
     registration_date timestamp,
     foreign key (user_id) references users(id)
         on delete cascade

@@ -2,7 +2,8 @@ package com.unforgettable.securitypart.service;
 
 import com.unforgettable.securitypart.entity.UserEntity;
 import com.unforgettable.securitypart.enums.UserRole;
-import com.unforgettable.securitypart.model.ApplicationUser;
+import com.unforgettable.securitypart.exception.UserAlreadyExistsException;
+import com.unforgettable.securitypart.model.SecurityUser;
 import com.unforgettable.securitypart.model.AuthenticationRequest;
 import com.unforgettable.securitypart.model.AuthenticationResponse;
 import com.unforgettable.securitypart.model.RegistrationRequest;
@@ -17,9 +18,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 
 @Service
 public class AuthenticationService {
@@ -42,11 +40,11 @@ public class AuthenticationService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest) {
+    public AuthenticationResponse authenticate(AuthenticationRequest request) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                authenticationRequest.getUsername(), authenticationRequest.getPassword()));
+                request.getUsername(), request.getPassword()));
 
-        UserDetails user = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
+        UserDetails user = userDetailsService.loadUserByUsername(request.getUsername());
 
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
@@ -68,18 +66,30 @@ public class AuthenticationService {
         return new AuthenticationResponse(accessToken, refreshToken);
     }
 
-    public AuthenticationResponse register(RegistrationRequest request){
+    public AuthenticationResponse register(RegistrationRequest request) {
+        String username = request.getUsername();
+        Boolean isEducator = request.getIsEducator();
+        UserRole userRole;
+
+        if (applicationUserRepository.existsByUsername(username))
+            throw new UserAlreadyExistsException("User with username = " + username + " has already existed");
+
+        if (isEducator)
+            userRole = UserRole.EDUCATOR;
+        else
+            userRole = UserRole.STUDENT;
+
         UserEntity user = UserEntity.builder()
-                .username(request.getUsername())
-                .password(passwordEncoder.encode(request.getUsername()))
-                .role(UserRole.STUDENT)
+                .username(username)
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(userRole)
                 .build();
 
         applicationUserRepository.save(user);
-        ApplicationUser applicationUser = ApplicationUser.parseEntityUser(user);
+        SecurityUser securityUser = SecurityUser.parseEntityUser(user);
 
-        String accessToken = jwtService.generateAccessToken(applicationUser);
-        String refreshToken = jwtService.generateRefreshToken(applicationUser);
+        String accessToken = jwtService.generateAccessToken(securityUser);
+        String refreshToken = jwtService.generateRefreshToken(securityUser);
 
         return new AuthenticationResponse(accessToken, refreshToken);
     }

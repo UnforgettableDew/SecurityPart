@@ -3,11 +3,13 @@ package com.unforgettable.securitypart.service;
 import com.unforgettable.securitypart.dto.CourseDTO;
 import com.unforgettable.securitypart.dto.LaboratoryWorkDTO;
 import com.unforgettable.securitypart.entity.*;
+import com.unforgettable.securitypart.exception.NoLaboratoryWorkException;
+import com.unforgettable.securitypart.model.CommonResponse;
 import com.unforgettable.securitypart.repository.CourseRepository;
 import com.unforgettable.securitypart.repository.LaboratoryWorkRepository;
 import com.unforgettable.securitypart.repository.StudentRepository;
 import com.unforgettable.securitypart.repository.TaskRepository;
-import com.unforgettable.securitypart.utils.JwtUtils;
+import com.unforgettable.securitypart.utils.EducationUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,93 +25,98 @@ public class StudentService {
     private final LaboratoryWorkRepository laboratoryWorkRepository;
     private final TaskRepository taskRepository;
     private final JwtService jwtService;
-    private final JwtUtils jwtUtils;
+    private final EducationUtils educationUtils;
 
     @Autowired
     public StudentService(StudentRepository studentRepository,
                           CourseRepository courseRepository,
                           LaboratoryWorkRepository laboratoryWorkRepository,
-                          TaskRepository taskRepository, JwtService jwtService, JwtUtils jwtUtils) {
+                          TaskRepository taskRepository,
+                          JwtService jwtService,
+                          EducationUtils educationUtils) {
         this.studentRepository = studentRepository;
         this.courseRepository = courseRepository;
         this.laboratoryWorkRepository = laboratoryWorkRepository;
         this.taskRepository = taskRepository;
         this.jwtService = jwtService;
-        this.jwtUtils = jwtUtils;
+        this.educationUtils = educationUtils;
     }
 
+//    private Long getStudentId(HttpServletRequest request, Long courseId) {
+//        Long studentId = jwtService.getStudentId(request);
+//
+//        List<Long> studentCourseIdList = studentRepository.findStudentsIdByCourse(courseId);
+//
+//        for (Long studentCourseId : studentCourseIdList) {
+//            if (studentCourseId.equals(studentId)) {
+//                return studentId;
+//            }
+//        }
+//        throw new NoSuchStudentOnCourseException("There is no student with id = " + studentId +
+//                " on course with id = " + courseId);
+//    }
+
     public List<CourseDTO> getStudentCourses(HttpServletRequest request) {
-        Long studentId = jwtUtils.getStudentId(request);
+        Long studentId = jwtService.getStudentId(request);
 
         return courseRepository.findCoursesByStudentId(studentId)
                 .stream()
                 .map(CourseDTO::new).toList();
     }
 
+
     public List<LaboratoryWorkDTO> getStudentLaboratoryWorks(HttpServletRequest request,
                                                              Long courseId) {
-        Long studentId = jwtUtils.getStudentId(request);
+        Long studentId = educationUtils.getStudentId(request, courseId);
 
-        List<Long> studentCourseIdList = studentRepository.findStudentIdByCourse(courseId);
-        for (Long studentCourseId : studentCourseIdList) {
-            if (studentCourseId.equals(studentId)) {
-                List<LaboratoryWorkDTO> laboratoryWorks = laboratoryWorkRepository.
-                        findLaboratoryWorksByStudentIdAndCourseId(studentId, courseId);
+        List<LaboratoryWorkDTO> laboratoryWorks = laboratoryWorkRepository.
+                findLaboratoryWorksByStudentIdAndCourseId(studentId, courseId);
 
-                laboratoryWorks.forEach(laboratoryWorkDTO ->
-                        laboratoryWorkDTO.setTask(taskRepository.
-                                findTaskByLaboratoryWorkId(laboratoryWorkDTO.getId())));
-                return laboratoryWorks;
-            }
-        }
-        return null;
+        laboratoryWorks.forEach(laboratoryWorkDTO ->
+                laboratoryWorkDTO.setTask(taskRepository.
+                        findTaskByLaboratoryWorkId(laboratoryWorkDTO.getId())));
+        return laboratoryWorks;
     }
 
     public LaboratoryWorkDTO getLaboratoryWorkByCourse(HttpServletRequest request,
                                                        Long courseId,
-                                                       Long lwId){
-        Long studentId = jwtUtils.getStudentId(request);
-        List<Long> studentCourseIdList = studentRepository.findStudentIdByCourse(courseId);
+                                                       Long labId) {
+        Long studentId = educationUtils.getStudentId(request, courseId);
 
-        for (Long studentCourseId : studentCourseIdList) {
-            if (studentCourseId.equals(studentId)) {
-                LaboratoryWorkDTO laboratoryWork = laboratoryWorkRepository
-                        .findLaboratoryWorksByStudentIdAndCourseIdAndLWId(
-                                studentId,
-                                courseId,
-                                lwId);
-                laboratoryWork.setTask(taskRepository.findTaskByLaboratoryWorkId(lwId));
+        LaboratoryWorkDTO laboratoryWork = laboratoryWorkRepository
+                .findLaboratoryWorksByStudentIdAndCourseIdAndLWId(
+                        studentId,
+                        courseId,
+                        labId);
 
-                return laboratoryWork;
-            }
-        }
-        return null;
+        if (laboratoryWork == null)
+            throw new NoLaboratoryWorkException("No such laboratory work with id = " + labId
+                    + " on course with id = " + courseId);
+
+        laboratoryWork.setTask(taskRepository.findTaskByLaboratoryWorkId(labId));
+
+        return laboratoryWork;
     }
 
-    public Map<String, Object> passedLWStats(HttpServletRequest request,
-                                              Long courseId){
-        Long studentId = jwtUtils.getStudentId(request);
-        List<Long> studentCourseIdList = studentRepository.findStudentIdByCourse(courseId);
-        Map<String, Object> lwStats = new HashMap<>();
+    public Map<String, Object> passedLabsStats(HttpServletRequest request,
+                                               Long courseId) {
 
-        for (Long studentCourseId : studentCourseIdList) {
-            if (studentCourseId.equals(studentId)) {
-                Integer tasksCount = taskRepository.countTaskByCourseId(courseId);
+        Map<String, Object> labStats = new HashMap<>();
 
-                lwStats.put("tasks_count", tasksCount);
-                lwStats.put("laboratory_works", getStudentLaboratoryWorks(request, courseId));
+        Long studentId = educationUtils.getStudentId(request, courseId);
+        Integer tasksCount = taskRepository.countTaskByCourseId(courseId);
 
-                return lwStats;
-            }
-        }
-        return null;
+        labStats.put("tasks_count", tasksCount);
+        labStats.put("laboratory_works", getStudentLaboratoryWorks(request, courseId));
+
+        return labStats;
     }
 
-    public void addLaboratoryWork(HttpServletRequest request,
-                                  LaboratoryWork laboratoryWork,
-                                  Long courseId,
-                                  Long taskId){
-        Long studentId = jwtUtils.getStudentId(request);
+    public CommonResponse addLaboratoryWork(HttpServletRequest request,
+                                            LaboratoryWork laboratoryWork,
+                                            Long courseId,
+                                            Long taskId) {
+        Long studentId = jwtService.getStudentId(request);
         Student student = studentRepository.findById(studentId).get();
 
         Task task = taskRepository.findById(taskId).get();
@@ -120,21 +127,32 @@ public class StudentService {
         laboratoryWork.setStudent(student);
 
         laboratoryWorkRepository.save(laboratoryWork);
+        return new CommonResponse(true);
     }
 
-    public void createProfile(HttpServletRequest request, Student student){
+    public CommonResponse createProfile(HttpServletRequest request, Student student) {
         UserEntity user = jwtService.getUserByJwt(request);
         student.setUser(user);
         studentRepository.save(student);
+        return new CommonResponse(true);
     }
 
-    public void joinCourse(HttpServletRequest request, Long courseId){
-        Long studentId = jwtUtils.getStudentId(request);
+    public CommonResponse joinCourse(HttpServletRequest request, Long courseId) {
+        Long studentId = jwtService.getStudentId(request);
         Student student = studentRepository.findById(studentId).get();
         Course course = courseRepository.findById(courseId).get();
 
         student.addCourse(course);
 
         studentRepository.save(student);
+        return new CommonResponse(true);
+    }
+
+    public CommonResponse editStudentProfile(HttpServletRequest request, Student updatedStudent){
+        Long studentId = jwtService.getStudentId(request);
+        Student student = studentRepository.findById(studentId).get();
+        student.updateStudent(updatedStudent);
+        studentRepository.save(student);
+        return new CommonResponse(true);
     }
 }

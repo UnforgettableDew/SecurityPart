@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Set;
 
-public class ApplicationUser implements UserDetails {
+public class SecurityUser implements UserDetails {
     private final Set<? extends GrantedAuthority> grantedAuthorities;
     private final String password;
     private final String username;
@@ -17,13 +17,13 @@ public class ApplicationUser implements UserDetails {
     private final boolean isCredentialsNonExpired;
     private final boolean isEnabled;
 
-    public ApplicationUser(Set<? extends GrantedAuthority> grantedAuthorities,
-                           String password,
-                           String username,
-                           boolean isAccountNonExpired,
-                           boolean isAccountNonLocked,
-                           boolean isCredentialsNonExpired,
-                           boolean isEnabled) {
+    public SecurityUser(Set<? extends GrantedAuthority> grantedAuthorities,
+                        String password,
+                        String username,
+                        boolean isAccountNonExpired,
+                        boolean isAccountNonLocked,
+                        boolean isCredentialsNonExpired,
+                        boolean isEnabled) {
         this.grantedAuthorities = grantedAuthorities;
         this.password = password;
         this.username = username;
@@ -68,9 +68,9 @@ public class ApplicationUser implements UserDetails {
         return isEnabled;
     }
 
-    public static ApplicationUser parseEntityUser(UserEntity userEntity) {
-        return new ApplicationUser(
-                Set.of(new SimpleGrantedAuthority("ROLE_"+userEntity.getRole().name())),
+    public static SecurityUser parseEntityUser(UserEntity userEntity) {
+        return new SecurityUser(
+                Set.of(new SimpleGrantedAuthority("ROLE_" + userEntity.getRole().name())),
                 userEntity.getPassword(),
                 userEntity.getUsername(),
                 true,

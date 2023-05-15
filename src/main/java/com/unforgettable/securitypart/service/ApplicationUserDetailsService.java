@@ -1,7 +1,7 @@
 package com.unforgettable.securitypart.service;
 
 import com.unforgettable.securitypart.entity.UserEntity;
-import com.unforgettable.securitypart.model.ApplicationUser;
+import com.unforgettable.securitypart.model.SecurityUser;
 import com.unforgettable.securitypart.repository.ApplicationUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,12 +20,13 @@ public class ApplicationUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        ApplicationUser applicationUser = ApplicationUser.parseEntityUser(applicationUserRepository.findByUsername(username));
-        return applicationUser;
+        return SecurityUser.parseEntityUser(applicationUserRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User with username=" + username + " not found")));
     }
 
     public UserEntity getUserByUsername(String username){
-        return applicationUserRepository.findByUsername(username);
+        return applicationUserRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User with username=" + username + " not found"));
     }
 
     public void saveUser(UserEntity userEntity){

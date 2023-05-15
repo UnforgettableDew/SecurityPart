@@ -1,7 +1,8 @@
 package com.unforgettable.securitypart.config;
 
 import com.unforgettable.securitypart.security.JwtAuthenticationFilter;
-import com.unforgettable.securitypart.service.ApplicationOAuth2UserService;
+import com.unforgettable.securitypart.security.ApplicationAccessDeniedHandler;
+import com.unforgettable.securitypart.security.ApplicationAuthenticationEntryPoint;
 import com.unforgettable.securitypart.service.ApplicationUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -13,7 +14,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -38,11 +38,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf().disable()
+                .exceptionHandling().accessDeniedHandler(new ApplicationAccessDeniedHandler())
+                .authenticationEntryPoint(new ApplicationAuthenticationEntryPoint())
+                .and()
                 .authorizeHttpRequests()
-//                .requestMatchers("/security/**").permitAll
-//                .requestMatchers("/swagger-ui.html").permitAll()
                     .requestMatchers("/auth/**", "/greeting").permitAll()
                     .requestMatchers( "/admin/**").hasRole("EDUCATOR")
+                    .requestMatchers("/student/**").hasRole("STUDENT")
+                    .requestMatchers("/educator/**").hasRole("EDUCATOR")
                 .anyRequest()
                 .authenticated()
                 .and()
@@ -60,6 +63,7 @@ public class SecurityConfig {
                     .logoutSuccessHandler(((request, response, authentication) -> SecurityContextHolder.clearContext()));
 //                .and()
 //                .oauth2Login().userInfoEndpoint().userService(oAuth2UserService);
+        httpSecurity.cors();
         return httpSecurity.build();
     }
 

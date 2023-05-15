@@ -1,6 +1,7 @@
 package com.unforgettable.securitypart.controller;
 
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,8 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class GreetingController {
 
     @GetMapping
-    public String greeting(){
-        return "Hello Diploma";
+    public ResponseEntity<String> greeting(){
+        return ResponseEntity.ok("HELLO DIPLOMA");
     }
     @GetMapping("/github")
     public String github(){

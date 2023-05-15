@@ -14,6 +14,11 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = "*",
+        allowedHeaders = "*",
+        exposedHeaders = "*",
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE},
+        maxAge = 3600)
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
@@ -34,7 +39,7 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> refresh(@RequestBody RegistrationRequest request){
-        return new ResponseEntity<>(authenticationService.register(request), HttpStatus.OK);
+        return new ResponseEntity<>(authenticationService.register(request), HttpStatus.CREATED);
     }
 
     @GetMapping

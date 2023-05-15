@@ -13,6 +13,10 @@ import lombok.ToString;
 public class RegistrationRequest {
     private String username;
     private String password;
+
     @JsonProperty(value = "confirmed_password")
     private String confirmedPassword;
+
+    @JsonProperty(value = "is_educator")
+    private Boolean isEducator;
 }

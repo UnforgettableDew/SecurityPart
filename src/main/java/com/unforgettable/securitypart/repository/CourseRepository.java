@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public interface CourseRepository extends JpaRepository<Course, Long> {
@@ -17,6 +18,9 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     Course findCourseByIdAndEducatorId(Long courseId, Long educatorId);
     @Query("select c from Course c join c.students s where s.id=:studentId")
     List<Course> findCoursesByStudentId(Long studentId);
+
+    @Query("select t.course.id from Task t where t.id=:taskId")
+    Long findCourseIdByTaskId(Long taskId);
 //    @Query("select new com.unforgettable.securitypart.dto.StudentDTO(" +
 //            "s.id, s.firstname, s.lastname, s.group) from Student s " +
 //            "join s.courses c where c.id=:courseId and c.educator.id=:educatorId")

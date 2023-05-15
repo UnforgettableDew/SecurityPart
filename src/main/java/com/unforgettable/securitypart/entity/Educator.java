@@ -40,7 +40,7 @@ public class Educator {
     private String telegramContact;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", unique = true)
     @JsonIgnore
     private UserEntity user;
 
@@ -49,8 +49,16 @@ public class Educator {
     @JsonIgnore
     private List<Course> courses;
 
-    public void addCourse(Course course){
+    public void addCourse(Course course) {
         courses.add(course);
+    }
+
+    public void updateEducator(Educator educator) {
+        this.firstname = educator.getFirstname();
+        this.lastname = educator.getLastname();
+        this.age = educator.getAge();
+        this.email = educator.getEmail();
+        this.telegramContact = educator.getTelegramContact();
     }
 
 }

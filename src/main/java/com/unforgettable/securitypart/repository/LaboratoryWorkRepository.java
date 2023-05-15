@@ -44,6 +44,7 @@ public interface LaboratoryWorkRepository extends JpaRepository<LaboratoryWork, 
             "where lw.task.course.id=:courseId and lw.task.id=:taskId")
     Float avgScoreForLWByCourseAndTask(Long courseId, Long taskId);
 
-    @Query("select lw.githubReference from LaboratoryWork lw where lw.id=:labId")
-    String findGithubReferenceByLabId(Long labId);
+    @Query("select lw.githubReference from LaboratoryWork lw " +
+            "where lw.id=:labId and lw.task.course.id=:courseId")
+    String findGithubReferenceByLabId(Long labId, Long courseId);
 }

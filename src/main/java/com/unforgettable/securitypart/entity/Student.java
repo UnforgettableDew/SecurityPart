@@ -57,7 +57,7 @@ public class Student {
     private List<Course> courses;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", unique = true)
     @JsonIgnore
     private UserEntity user;
 
@@ -65,11 +65,20 @@ public class Student {
     @JsonProperty(value = "registration_date")
     private Timestamp registrationDate;
 
-    public void addCourse(Course course){
+    public void addCourse(Course course) {
         courses.add(course);
     }
 
-    public void addLaboratoryWork(LaboratoryWork laboratoryWork){
+    public void addLaboratoryWork(LaboratoryWork laboratoryWork) {
         laboratoryWorks.add(laboratoryWork);
+    }
+
+    public void updateStudent(Student student) {
+        this.firstname = student.getFirstname();
+        this.lastname = student.getLastname();
+        this.email = student.getEmail();
+        this.group = student.getGroup();
+        this.telegramContact = student.getTelegramContact();
+        this.age = student.getAge();
     }
 }

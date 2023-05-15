@@ -2,6 +2,8 @@ package com.unforgettable.securitypart.service;
 
 import com.unforgettable.securitypart.entity.UserEntity;
 import com.unforgettable.securitypart.repository.ApplicationUserRepository;
+import com.unforgettable.securitypart.repository.EducatorRepository;
+import com.unforgettable.securitypart.repository.StudentRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -28,12 +31,15 @@ public class JwtService {
     private Long accessExpiration;
     @Value("${application.security.jwt.refresh-token.expiration}")
     private Long refreshExpiration;
-
     private final ApplicationUserRepository userRepository;
+    private final EducatorRepository educatorRepository;
+    private final StudentRepository studentRepository;
 
     @Autowired
-    public JwtService(ApplicationUserRepository userRepository) {
+    public JwtService(ApplicationUserRepository userRepository, EducatorRepository educatorRepository, StudentRepository studentRepository) {
         this.userRepository = userRepository;
+        this.educatorRepository = educatorRepository;
+        this.studentRepository = studentRepository;
     }
 
     public String extractUsername(String token) {
@@ -99,11 +105,31 @@ public class JwtService {
     public UserEntity getUserByJwt(HttpServletRequest request){
         String jwtToken = request.getHeader(HttpHeaders.AUTHORIZATION).substring(7);
         String username = extractUsername(jwtToken);
-        return userRepository.findByUsername(username);
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User with username=" + username + " not found"));
     }
 
     public Long getUserIdByJwt(String jwt){
         String username = extractUsername(jwt);
         return userRepository.findUserIdByUsername(username);
+    }
+
+    public String checkHeader(String token){
+        if(token == null || !token.startsWith("Bearer "))
+            throw new IllegalArgumentException("Header is null or doesn't start with 'Bearer '");
+        return token.substring("Bearer".length());
+    }
+
+    public Long getStudentId(HttpServletRequest request){
+        String jwtToken = request.getHeader(HttpHeaders.AUTHORIZATION).substring(7);
+        Long userId = getUserIdByJwt(jwtToken);
+
+        return studentRepository.findStudentIdByUserId(userId);
+    }
+
+    public Long getEducatorId(HttpServletRequest request){
+        String jwtToken = request.getHeader(HttpHeaders.AUTHORIZATION).substring(7);
+        Long userId = getUserIdByJwt(jwtToken);
+        return educatorRepository.findEducatorIdByUserId(userId);
     }
 }

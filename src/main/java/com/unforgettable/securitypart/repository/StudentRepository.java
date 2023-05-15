@@ -12,7 +12,7 @@ import java.util.List;
 public interface StudentRepository extends JpaRepository<Student, Long> {
 
     @Query("select s.id from Course c join c.students s where c.id=:courseId")
-    List<Long> findStudentIdByCourse(Long courseId);
+    List<Long> findStudentsIdByCourse(Long courseId);
     @Query("select s.id from Student s where s.user.id=:userId")
     Long findStudentIdByUserId(Long userId);
     @Query("select new com.unforgettable.securitypart.dto.StudentDTO(" +
