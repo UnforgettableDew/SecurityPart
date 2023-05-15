@@ -36,6 +36,9 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
             " where s.id=:studentId and c.id=:courseId and c.educator.id=:educatorId")
     StudentDTO findStudentByIdAndCourseId(Long studentId, Long courseId, Long educatorId);
 
+    @Query("select s from Student s join s.courses c where c.id=:courseId")
+    List<Student> findStudentsByCourseId(Long courseId);
+
     @Query("select count(s) from Student s join s.courses c " +
             "where c.id=:courseId")
     Integer countStudentsByCourseId(Long courseId);

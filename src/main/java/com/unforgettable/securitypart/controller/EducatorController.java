@@ -8,11 +8,21 @@ import com.unforgettable.securitypart.entity.Educator;
 import com.unforgettable.securitypart.entity.Task;
 import com.unforgettable.securitypart.model.CommonResponse;
 import com.unforgettable.securitypart.service.EducatorService;
+import com.unforgettable.securitypart.service.FileService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
@@ -28,10 +38,12 @@ import static org.springframework.http.HttpStatus.OK;
         maxAge = 3600)
 public class EducatorController {
     private final EducatorService educatorService;
+    private final FileService fileService;
 
     @Autowired
-    public EducatorController(EducatorService educatorService) {
+    public EducatorController(EducatorService educatorService, FileService fileService) {
         this.educatorService = educatorService;
+        this.fileService = fileService;
     }
 
     @GetMapping("/profile")
@@ -79,6 +91,18 @@ public class EducatorController {
                 getLaboratoryWorkByCourseAndStudent(request, courseId, studentId, labId), OK);
     }
 
+    @GetMapping("/courses/{courseId}/student/{studentId}/lab/{labId}/download")
+    public ResponseEntity<Resource> downloadStudentLaboratoryWork(HttpServletRequest request,
+                                                                  @PathVariable Long courseId,
+                                                                  @PathVariable Long studentId,
+                                                                  @PathVariable Long labId) throws MalformedURLException {
+        Resource resource = educatorService.downloadLab(request, courseId, studentId, labId);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
+    }
+
     @GetMapping("/courses/{courseId}/stats")
     public ResponseEntity<Map<String, Object>> getCourseStats(HttpServletRequest request,
                                                               @PathVariable Long courseId) {
@@ -121,7 +145,26 @@ public class EducatorController {
 
     @PutMapping("/profile/edit")
     public ResponseEntity<CommonResponse> editProfile(HttpServletRequest request,
-                                                      @RequestBody Educator educator){
+                                                      @RequestBody Educator educator) {
         return new ResponseEntity<>(educatorService.editProfile(request, educator), OK);
     }
+
+    @GetMapping("/createdir")
+    public void createDir() {
+        fileService.createDirectories();
+    }
+
+    @PostMapping("/course/{courseId}/task/{taskId}/upload")
+    public ResponseEntity<CommonResponse> uploadTask(HttpServletRequest request,
+                                                     @PathVariable Long courseId,
+                                                     @PathVariable Long taskId,
+                                                     @RequestParam("file") MultipartFile file) throws IOException {
+        return new ResponseEntity<>(educatorService.uploadTask(request, courseId, taskId, file), OK);
+    }
+
+
+//    public ResponseEntity<CommonResponse> downloadLab(HttpServletRequest request,
+//                                                      @PathVariable Long labId){
+//        return new ResponseEntity<>();
+//    }
 }

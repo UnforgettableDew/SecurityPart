@@ -47,4 +47,10 @@ public interface LaboratoryWorkRepository extends JpaRepository<LaboratoryWork, 
     @Query("select lw.githubReference from LaboratoryWork lw " +
             "where lw.id=:labId and lw.task.course.id=:courseId")
     String findGithubReferenceByLabId(Long labId, Long courseId);
+
+    @Query("select lw.title from LaboratoryWork lw " +
+            "where lw.student.id=:studentId and lw.task.course.id=:courseId and lw.id=:LWId")
+    String findLaboratoryWorkTitleByStudentIdAndCourseIdAndLWId(Long studentId,
+                                                            Long courseId,
+                                                            Long LWId);
 }

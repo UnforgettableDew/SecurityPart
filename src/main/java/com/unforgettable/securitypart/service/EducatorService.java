@@ -16,9 +16,19 @@ import com.unforgettable.securitypart.repository.*;
 import com.unforgettable.securitypart.utils.EducationUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.spi.ResourceBundleProvider;
 
 @Service
 public class EducatorService {
@@ -264,12 +274,58 @@ public class EducatorService {
                 .orElseThrow();
     }
 
-    public CommonResponse editProfile(HttpServletRequest request, Educator updatedEducator){
+    public CommonResponse editProfile(HttpServletRequest request, Educator updatedEducator) {
         Long educatorId = jwtService.getEducatorId(request);
         Educator educator = educatorRepository.findById(educatorId).get();
         educator.updateEducator(updatedEducator);
         educatorRepository.save(educator);
 
+        return new CommonResponse(true);
+    }
+
+    public Resource downloadLab(HttpServletRequest request,
+                                Long courseId,
+                                Long studentId,
+                                Long labId) throws MalformedURLException {
+        Long educatorId = educationUtils.getEducatorId(request, courseId);
+
+        List<Long> studentCourseIdList = studentRepository.findStudentsIdByCourse(courseId);
+//
+        for (Long studentCourseId : studentCourseIdList) {
+            if (studentCourseId.equals(studentId)) {
+                String laboratoryWorkTitle = laboratoryWorkRepository
+                        .findLaboratoryWorkTitleByStudentIdAndCourseIdAndLWId(
+                                studentId,
+                                courseId,
+                                labId);
+                if (laboratoryWorkTitle.isEmpty())
+                    throw new NoLaboratoryWorkException("No such laboratory work with id = " + labId
+                            + " on course with id = " + courseId + " and student id = " + studentId);
+                Path path = Paths.get(laboratoryWorkTitle);
+                return new UrlResource(path.toUri());
+            }
+        }
+        throw new NoSuchStudentOnCourseException("There is no student with id = " + studentId +
+                " on course with id = " + courseId);
+    }
+
+    public CommonResponse uploadTask(HttpServletRequest request,
+                                     Long courseId,
+                                     Long taskId,
+                                     MultipartFile file) throws IOException {
+        Long educatorId = educationUtils.getEducatorId(request, courseId);
+
+        Course course = courseRepository.findById(courseId).get();
+        Task task = taskRepository.findById(taskId).get();
+        String educatorName = educatorRepository.findEducatorNameByCourseId(courseId).replace(",", "");
+
+        String path = "D:\\Files\\" + educatorName +
+                "\\" + course.getTitle() +
+                "\\Tasks\\";
+        task.setReference(path + file.getOriginalFilename());
+        Path filePath = Paths.get(path, file.getOriginalFilename());
+        file.transferTo(filePath.toFile());
+        taskRepository.save(task);
         return new CommonResponse(true);
     }
 }

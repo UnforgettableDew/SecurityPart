@@ -44,6 +44,7 @@ create table course
 create table lw_task
 (
     id          bigserial primary key,
+    reference varchar(255),
     title       varchar(64),
     description varchar(255),
     max_score float,
@@ -72,7 +73,7 @@ create table student
 create table laboratory_work
 (
     id         bigserial primary key,
-    title      varchar(64),
+    title      varchar(255),
     github_reference varchar(128),
     score float,
     is_passed boolean,

@@ -23,6 +23,9 @@ public class Task {
     @Column(name = "id")
     private Long id;
 
+    @Column(name = "reference")
+    private String reference;
+
     @Column(name = "title")
     private String title;
 

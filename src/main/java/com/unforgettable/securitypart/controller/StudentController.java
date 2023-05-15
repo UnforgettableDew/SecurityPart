@@ -8,10 +8,15 @@ import com.unforgettable.securitypart.model.CommonResponse;
 import com.unforgettable.securitypart.service.StudentService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Map;
 
@@ -75,5 +80,25 @@ public class StudentController {
     public ResponseEntity<CommonResponse> editProfile(HttpServletRequest request,
                                                       @RequestBody Student student){
         return new ResponseEntity<>(studentService.editStudentProfile(request, student), OK);
+    }
+
+    @PostMapping("/course/{courseId}/task/{taskId}/lab/{labId}/upload")
+    public ResponseEntity<CommonResponse> uploadLab(HttpServletRequest request,
+                                                    @RequestParam("file") MultipartFile file,
+                                                    @PathVariable Long labId,
+                                                    @PathVariable Long courseId,
+                                                    @PathVariable Long taskId) throws IOException {
+        return new ResponseEntity<>(studentService.addLabFile(request, file, labId, courseId, taskId), OK);
+    }
+
+    @GetMapping("/courses/{courseId}/task/{taskId}/download")
+    public ResponseEntity<Resource> downloadTask(HttpServletRequest request,
+                                                                  @PathVariable Long courseId,
+                                                                  @PathVariable Long taskId) throws MalformedURLException {
+        Resource resource = studentService.downloadTask(request, courseId, taskId);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
     }
 }

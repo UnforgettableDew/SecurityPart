@@ -30,21 +30,34 @@ values ('Back-end', 'Course for Back-end developers', 1),
        ('Front-end', 'Course for Front-end developers', 2),
        ('DevOps', 'Course for DevOps', 2);
 
-insert into lw_task(title, description, max_score, course_id)
-values ('Database Fundamentals', 'Learn the basics of database design and management', 8, 1),
-       ('SQL Queries', 'Learn how to write SQL queries to retrieve and manipulate data', 9, 1),
-       ('Server-side Scripting', 'Learn how to write server-side scripts using PHP', 9, 1),
-       ('API Development', 'Learn how to develop RESTful APIs for web applications', 10, 1),
-       ('Security and Authentication', 'Learn about web application security and authentication techniques', 10, 1),
-       ('HTML Basics', 'Learn the fundamentals of HTML', 6, 2),
-       ('CSS Styling', 'Learn how to style your HTML pages with CSS', 8, 2),
-       ('JavaScript Essentials', 'Learn the basics of JavaScript programming language', 9, 2),
-       ('Responsive Design', 'Learn how to create responsive web pages that adapt to different screen sizes', 9, 2),
-       ('Advanced CSS', 'Learn advanced techniques for styling web pages with CSS', 10, 2),
-       ('Implement CI/CD pipeline for a Java application', 'Configure Jenkins to build, test, and deploy a Java application using a pipeline', 20, 3),
-       ('Create a Kubernetes deployment for a microservice', 'Deploy a microservice on a Kubernetes cluster using YAML files', 20, 3),
-       ('Configure an Ansible playbook for a web server', 'Write an Ansible playbook to install and configure a web server on a remote machine', 20, 3),
-       ('Set up monitoring and logging for a Dockerized application', 'Configure Prometheus and Grafana to monitor and visualize logs for a Dockerized application', 20, 3);
+insert into lw_task(reference, title, description, max_score, course_id)
+values ('D:\Files\KostyantinZhereb\Back-end\Tasks\task1.docx', 'Database Fundamentals',
+        'Learn the basics of database design and management', 8, 1),
+       ('D:\Files\KostyantinZhereb\Back-end\Tasks\task2.docx', 'SQL Queries',
+        'Learn how to write SQL queries to retrieve and manipulate data', 9, 1),
+       ('D:\Files\KostyantinZhereb\Back-end\Tasks\task3.docx', 'Server-side Scripting',
+        'Learn how to write server-side scripts using PHP', 9, 1),
+       ('D:\Files\KostyantinZhereb\Back-end\Tasks\task4.docx', 'API Development',
+        'Learn how to develop RESTful APIs for web applications', 10, 1),
+       ('D:\Files\KostyantinZhereb\Back-end\Tasks\task5.docx', 'Security and Authentication',
+        'Learn about web application security and authentication techniques', 10, 1),
+       ('D:\Files\TomYorkshir\DevOps\Tasks\task1.docx', 'HTML Basics', 'Learn the fundamentals of HTML', 6, 2),
+       ('D:\Files\TomYorkshir\DevOps\Tasks\task2.docx', 'CSS Styling', 'Learn how to style your HTML pages with CSS', 8,
+        2),
+       ('D:\Files\TomYorkshir\DevOps\Tasks\task3.docx', 'JavaScript Essentials',
+        'Learn the basics of JavaScript programming language', 9, 2),
+       ('D:\Files\TomYorkshir\DevOps\Tasks\task4.docx', 'Responsive Design',
+        'Learn how to create responsive web pages that adapt to different screen sizes', 9, 2),
+       ('D:\Files\TomYorkshir\DevOps\Tasks\task5.docx', 'Advanced CSS',
+        'Learn advanced techniques for styling web pages with CSS', 10, 2),
+       ('D:\Files\TomYorkshir\Front-end\Tasks\task1', 'Implement CI/CD pipeline for a Java application',
+        'Configure Jenkins to build, test, and deploy a Java application using a pipeline', 20, 3),
+       ('D:\Files\TomYorkshir\Front-end\Tasks\task2', 'Create a Kubernetes deployment for a microservice',
+        'Deploy a microservice on a Kubernetes cluster using YAML files', 20, 3),
+       ('D:\Files\TomYorkshir\Front-end\Tasks\task3', 'Configure an Ansible playbook for a web server',
+        'Write an Ansible playbook to install and configure a web server on a remote machine', 20, 3),
+       ('D:\Files\TomYorkshir\Front-end\Tasks\task4', 'Set up monitoring and logging for a Dockerized application',
+        'Configure Prometheus and Grafana to monitor and visualize logs for a Dockerized application', 20, 3);
 
 insert into student(first_name, last_name, age, email, telegram_contact, student_group, user_id, registration_date)
 values ('John', 'Doe', 21, 'johndoe@example.com', '@johndoe', 'Group A', 3, '2023-01-08 14:30:00'),
@@ -65,8 +78,8 @@ values ('John', 'Doe', 21, 'johndoe@example.com', '@johndoe', 'Group A', 3, '202
 
 insert into laboratory_work(title, github_reference, score, is_passed, comment, student_id, task_id)
 values ('lab1_john', 'https://github.com/UnforgettableDew/SecurityPart', 8, true, 'great', 1, 1),
-       ('lab2_john', 'https://github.com/UnforgettableDew/TestGit', 7, true,'good', 1, 2),
-       ('lab3_john', 'https://github.com/UnforgettableDew/LibraryProject', 7, true,'well', 1, 3),
+       ('lab2_john', 'https://github.com/UnforgettableDew/TestGit', 7, true, 'good', 1, 2),
+       ('lab3_john', 'https://github.com/UnforgettableDew/LibraryProject', 7, true, 'well', 1, 3),
        ('lab4_john', 'https://github.com/mariamihai/spring-security-amigoscode-tutorial', null, false, null, 1, 4),
        ('lab1_jane', 'https://github.com/anasZabili/amigosCode_spring_data_jpa', 8, true, 'great', 2, 1),
        ('lab3_jane', 'https://github.com/mariamihai/kubernetes-related', 8, true, 'well', 2, 3),
@@ -109,7 +122,6 @@ values ('lab1_john', 'https://github.com/UnforgettableDew/SecurityPart', 8, true
 
 
 
-
 insert into course_student(student_id, course_id)
 values (1, 1),
        (2, 1),
@@ -124,13 +136,13 @@ values (1, 1),
        (8, 2),
        (9, 1),
        (10, 2),
-       (11,3),
-       (12,2),
-       (12,3),
-       (13,3),
-       (14,3),
-       (15,2),
-       (15,3);
+       (11, 3),
+       (12, 2),
+       (12, 3),
+       (13, 3),
+       (14, 3),
+       (15, 2),
+       (15, 3);
 
 
 
