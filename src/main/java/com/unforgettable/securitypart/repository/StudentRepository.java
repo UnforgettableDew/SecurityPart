@@ -21,14 +21,14 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     List<StudentDTO> findStudentsByCourseIdAndEducatorId(Long courseId, Long educatorId);
     @Query("select new com.unforgettable.securitypart.dto.StudentDTO(" +
             "s.id, s.firstname, s.lastname, s.group) " +
-            "from Student s join s.laboratoryWorks lw " +
+            "from Student s join s.passedTasks lw " +
             "where lw.task.id=:taskId and lw.task.course.id=:courseId")
     List<StudentDTO> findStudentsWhoPassedTask(Long courseId, Long taskId);
 
     @Query("select distinct new com.unforgettable.securitypart.dto.StudentDTO(" +
             "s.id, s.firstname, s.lastname, s.group) from Student s " +
-            "join s.laboratoryWorks lw " +
-            "where lw.isPassed=false and lw.task.course.id=:courseId")
+            "join s.passedTasks lw " +
+            "where lw.isAssessed=false and lw.task.course.id=:courseId")
     List<StudentDTO> findStudentWithUncheckedLabs(Long courseId);
     @Query("select new com.unforgettable.securitypart.dto.StudentDTO(" +
             "s.id, s.firstname, s.lastname, s.group, s.email, s.age, s.registrationDate, s.telegramContact)" +
@@ -43,7 +43,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
             "where c.id=:courseId")
     Integer countStudentsByCourseId(Long courseId);
 
-    @Query("select count(s) from Student s join s.laboratoryWorks lw " +
+    @Query("select count(s) from Student s join s.passedTasks lw " +
             "where lw.task.id=:taskId")
     Integer countStudentsByTaskId(Long taskId);
 }

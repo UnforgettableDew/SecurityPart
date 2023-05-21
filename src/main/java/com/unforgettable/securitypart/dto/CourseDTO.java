@@ -1,13 +1,16 @@
 package com.unforgettable.securitypart.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.unforgettable.securitypart.entity.Course;
 import com.unforgettable.securitypart.entity.Task;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 @Data
@@ -18,10 +21,15 @@ public class CourseDTO {
     private Long id;
     private String title;
     private String description;
+    @JsonProperty("start_date")
+    private Timestamp startDate;
+
+    @JsonProperty("end_date")
+    private Timestamp endDate;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String educator;
 
-//    @JsonProperty(value = "students_count")
+    //    @JsonProperty(value = "students_count")
 //    private Integer studentsCount;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<Task> tasks;
@@ -39,6 +47,8 @@ public class CourseDTO {
         this.educator = course.getEducator().getFirstname()
                 + " " + course.getEducator().getLastname();
         this.tasks = course.getTasks();
+        this.startDate = course.getStartDate();
+        this.endDate = course.getEndDate();
 //        this.studentsCount = studentsCount;
     }
 }

@@ -11,18 +11,18 @@ import java.util.List;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query("select new com.unforgettable.securitypart.dto.TaskDTO(" +
-            "t.id, t.title, t.maxScore) from Task t " +
-            "join t.laboratoryWorks lw where lw.id=:laboratoryWorkId")
-    TaskDTO findTaskByLaboratoryWorkId(Long laboratoryWorkId);
+            "t.id, t.title, t.maxPoint) from Task t " +
+            "join t.passedTasks lw where lw.id=:passedTaskId")
+    TaskDTO findTaskByPassedTaskId(Long passedTaskId);
 
 //    @Query("select count(c.tasks) from Course c where c.id=:courseId")
     Integer countTaskByCourseId(Long courseId);
 
-    @Query("select t.maxScore from Task t join t.laboratoryWorks lw" +
-            " where lw.id=:laboratoryWorkId")
-    Float scoreByLaboratoryWorkId(Long laboratoryWorkId);
+    @Query("select t.maxPoint from Task t join t.passedTasks lw" +
+            " where lw.id=:passedTaskId")
+    Float scoreByLaboratoryWorkId(Long passedTaskId);
 
-    @Query("select new com.unforgettable.securitypart.dto.TaskDTO(t.id, t.title, t.maxScore)" +
+    @Query("select new com.unforgettable.securitypart.dto.TaskDTO(t.id, t.title, t.maxPoint)" +
             " from Task t where t.course.id=:courseId")
     List<TaskDTO> findTasksByCourseId(Long courseId);
 }

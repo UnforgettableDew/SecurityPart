@@ -46,7 +46,7 @@ public class Student {
     @OneToMany(mappedBy = "student")
     @JsonManagedReference
     @JsonIgnore
-    private List<LaboratoryWork> laboratoryWorks;
+    private List<PassedTask> passedTasks;
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "course_student",
@@ -69,8 +69,8 @@ public class Student {
         courses.add(course);
     }
 
-    public void addLaboratoryWork(LaboratoryWork laboratoryWork) {
-        laboratoryWorks.add(laboratoryWork);
+    public void addLaboratoryWork(PassedTask passedTask) {
+        passedTasks.add(passedTask);
     }
 
     public void updateStudent(Student student) {

@@ -1,8 +1,8 @@
 package com.unforgettable.securitypart.controller;
 
 import com.unforgettable.securitypart.dto.CourseDTO;
-import com.unforgettable.securitypart.dto.LaboratoryWorkDTO;
-import com.unforgettable.securitypart.entity.LaboratoryWork;
+import com.unforgettable.securitypart.dto.PassedTaskDTO;
+import com.unforgettable.securitypart.entity.PassedTask;
 import com.unforgettable.securitypart.entity.Student;
 import com.unforgettable.securitypart.model.CommonResponse;
 import com.unforgettable.securitypart.service.StudentService;
@@ -20,10 +20,16 @@ import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Map;
 
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
 @RestController
 @RequestMapping("/student")
+@CrossOrigin(origins = "*",
+        allowedHeaders = "*",
+        exposedHeaders = "*",
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE},
+        maxAge = 3600)
 public class StudentController {
     private final StudentService studentService;
 
@@ -38,28 +44,28 @@ public class StudentController {
     }
 
     @GetMapping("/courses/{courseId}/labs")
-    public ResponseEntity<List<LaboratoryWorkDTO>> getStudentCourseLaboratoryWork(HttpServletRequest request,
-                                                                                  @PathVariable Long courseId) {
-        return new ResponseEntity<>(studentService.getStudentLaboratoryWorks(request, courseId), OK);
+    public ResponseEntity<List<PassedTaskDTO>> getStudentCoursePassedTasks(HttpServletRequest request,
+                                                                           @PathVariable Long courseId) {
+        return new ResponseEntity<>(studentService.getStudentPassedTasks(request, courseId), OK);
     }
 
-    @GetMapping("/courses/{courseId}/labs/{lwId}")
-    public ResponseEntity<LaboratoryWorkDTO> getLaboratoryWorkByCourse(HttpServletRequest request,
-                                                                       @PathVariable Long courseId,
-                                                                       @PathVariable Long lwId) {
-        return new ResponseEntity<>(studentService.getLaboratoryWorkByCourse(request, courseId, lwId), OK);
+    @GetMapping("/courses/{courseId}/labs/{passedTaskId}")
+    public ResponseEntity<PassedTaskDTO> getPassedTaskByCourse(HttpServletRequest request,
+                                                               @PathVariable Long courseId,
+                                                               @PathVariable Long passedTaskId) {
+        return new ResponseEntity<>(studentService.getPassedTaskByCourse(request, courseId, passedTaskId), OK);
     }
 
     @GetMapping("/courses/{courseId}/passed-lw-info")
     public ResponseEntity<Map<String, Object>> passedLWStats(HttpServletRequest request,
                                                              @PathVariable Long courseId) {
-        return new ResponseEntity<>(studentService.passedLabsStats(request, courseId), OK);
+        return new ResponseEntity<>(studentService.passedPassedTasksStats(request, courseId), OK);
     }
 
     @PostMapping("/profile/create")
-    public ResponseEntity<CommonResponse> createProfile(HttpServletRequest request,
+    public ResponseEntity<Student> createProfile(HttpServletRequest request,
                                                         @RequestBody Student student) {
-        return new ResponseEntity<>(studentService.createProfile(request, student), OK);
+        return new ResponseEntity<>(studentService.createProfile(request, student), CREATED);
     }
 
     @PostMapping("/course/{courseId}/join")
@@ -69,11 +75,11 @@ public class StudentController {
     }
 
     @PostMapping("/course/{courseId}/task/{taskId}")
-    public ResponseEntity<CommonResponse> addLaboratoryWork(HttpServletRequest request,
-                                                            @RequestBody LaboratoryWork laboratoryWork,
-                                                            @PathVariable Long courseId,
-                                                            @PathVariable Long taskId) {
-        return new ResponseEntity<>(studentService.addLaboratoryWork(request, laboratoryWork, courseId, taskId), OK);
+    public ResponseEntity<CommonResponse> addPassedTask(HttpServletRequest request,
+                                                        @RequestBody PassedTask passedTask,
+                                                        @PathVariable Long courseId,
+                                                        @PathVariable Long taskId) {
+        return new ResponseEntity<>(studentService.addPassedTask(request, passedTask, courseId, taskId), OK);
     }
 
     @PutMapping("/profile/edit")
@@ -82,13 +88,13 @@ public class StudentController {
         return new ResponseEntity<>(studentService.editStudentProfile(request, student), OK);
     }
 
-    @PostMapping("/course/{courseId}/task/{taskId}/lab/{labId}/upload")
-    public ResponseEntity<CommonResponse> uploadLab(HttpServletRequest request,
-                                                    @RequestParam("file") MultipartFile file,
-                                                    @PathVariable Long labId,
-                                                    @PathVariable Long courseId,
-                                                    @PathVariable Long taskId) throws IOException {
-        return new ResponseEntity<>(studentService.addLabFile(request, file, labId, courseId, taskId), OK);
+    @PostMapping("/course/{courseId}/task/{taskId}/lab/{passedTask}/upload")
+    public ResponseEntity<CommonResponse> uploadPassedTask(HttpServletRequest request,
+                                                           @RequestParam("file") MultipartFile file,
+                                                           @PathVariable Long passedTask,
+                                                           @PathVariable Long courseId,
+                                                           @PathVariable Long taskId) throws IOException {
+        return new ResponseEntity<>(studentService.addPassedTaskFile(request, file, passedTask, courseId, taskId), OK);
     }
 
     @GetMapping("/courses/{courseId}/task/{taskId}/download")

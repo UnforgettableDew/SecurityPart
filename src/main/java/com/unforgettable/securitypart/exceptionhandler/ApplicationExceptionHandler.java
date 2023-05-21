@@ -94,9 +94,9 @@ public class ApplicationExceptionHandler {
                 .body(response);
     }
 
-    @org.springframework.web.bind.annotation.ExceptionHandler(value = {NoLaboratoryWorkException.class})
-    public ResponseEntity<Object> handleNoLaboratoryWorkException(NoLaboratoryWorkException exception,
-                                                                        HttpServletRequest request) {
+    @org.springframework.web.bind.annotation.ExceptionHandler(value = {NoPassedTaskException.class})
+    public ResponseEntity<Object> handleNoLaboratoryWorkException(NoPassedTaskException exception,
+                                                                  HttpServletRequest request) {
         HttpStatus httpStatus = BAD_REQUEST;
 
         ExceptionResponse response = new ExceptionResponse(

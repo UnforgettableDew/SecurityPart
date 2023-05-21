@@ -1,10 +1,9 @@
 package com.unforgettable.securitypart.service;
 
 import com.unforgettable.securitypart.dto.CourseDTO;
-import com.unforgettable.securitypart.dto.LaboratoryWorkDTO;
+import com.unforgettable.securitypart.dto.PassedTaskDTO;
 import com.unforgettable.securitypart.entity.*;
-import com.unforgettable.securitypart.exception.NoLaboratoryWorkException;
-import com.unforgettable.securitypart.exception.NoSuchStudentOnCourseException;
+import com.unforgettable.securitypart.exception.NoPassedTaskException;
 import com.unforgettable.securitypart.model.CommonResponse;
 import com.unforgettable.securitypart.repository.*;
 import com.unforgettable.securitypart.utils.EducationUtils;
@@ -15,11 +14,12 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +28,7 @@ import java.util.Map;
 public class StudentService {
     private final StudentRepository studentRepository;
     private final CourseRepository courseRepository;
-    private final LaboratoryWorkRepository laboratoryWorkRepository;
+    private final PassedTaskRepository passedTaskRepository;
     private final TaskRepository taskRepository;
     private final EducatorRepository educatorRepository;
     private final JwtService jwtService;
@@ -37,14 +37,14 @@ public class StudentService {
     @Autowired
     public StudentService(StudentRepository studentRepository,
                           CourseRepository courseRepository,
-                          LaboratoryWorkRepository laboratoryWorkRepository,
+                          PassedTaskRepository passedTaskRepository,
                           TaskRepository taskRepository,
                           EducatorRepository educatorRepository,
                           JwtService jwtService,
                           EducationUtils educationUtils) {
         this.studentRepository = studentRepository;
         this.courseRepository = courseRepository;
-        this.laboratoryWorkRepository = laboratoryWorkRepository;
+        this.passedTaskRepository = passedTaskRepository;
         this.taskRepository = taskRepository;
         this.educatorRepository = educatorRepository;
         this.jwtService = jwtService;
@@ -60,83 +60,83 @@ public class StudentService {
     }
 
 
-    public List<LaboratoryWorkDTO> getStudentLaboratoryWorks(HttpServletRequest request,
-                                                             Long courseId) {
+    public List<PassedTaskDTO> getStudentPassedTasks(HttpServletRequest request,
+                                                     Long courseId) {
         Long studentId = educationUtils.getStudentId(request, courseId);
 
-        List<LaboratoryWorkDTO> laboratoryWorks = laboratoryWorkRepository.
-                findLaboratoryWorksByStudentIdAndCourseId(studentId, courseId);
+        List<PassedTaskDTO> passedTasks = passedTaskRepository.
+                findPassedTasksByStudentIdAndCourseId(studentId, courseId);
 
-        laboratoryWorks.forEach(laboratoryWorkDTO ->
-                laboratoryWorkDTO.setTask(taskRepository.
-                        findTaskByLaboratoryWorkId(laboratoryWorkDTO.getId())));
-        return laboratoryWorks;
+        passedTasks.forEach(passedTaskDTO ->
+                passedTaskDTO.setTask(taskRepository.
+                        findTaskByPassedTaskId(passedTaskDTO.getId())));
+        return passedTasks;
     }
 
-    public LaboratoryWorkDTO getLaboratoryWorkByCourse(HttpServletRequest request,
-                                                       Long courseId,
-                                                       Long labId) {
+    public PassedTaskDTO getPassedTaskByCourse(HttpServletRequest request,
+                                               Long courseId,
+                                               Long passedTaskId) {
         Long studentId = educationUtils.getStudentId(request, courseId);
 
-        LaboratoryWorkDTO laboratoryWork = laboratoryWorkRepository
-                .findLaboratoryWorksByStudentIdAndCourseIdAndLWId(
+        PassedTaskDTO passedTask = passedTaskRepository
+                .findPassedTasksByStudentIdAndCourseIdAndLWId(
                         studentId,
                         courseId,
-                        labId);
+                        passedTaskId);
 
-        if (laboratoryWork == null)
-            throw new NoLaboratoryWorkException("No such laboratory work with id = " + labId
+        if (passedTask == null)
+            throw new NoPassedTaskException("No such passed task with id = " + passedTaskId
                     + " on course with id = " + courseId);
 
-        laboratoryWork.setTask(taskRepository.findTaskByLaboratoryWorkId(labId));
+        passedTask.setTask(taskRepository.findTaskByPassedTaskId(passedTaskId));
 
-        return laboratoryWork;
+        return passedTask;
     }
 
-    public Map<String, Object> passedLabsStats(HttpServletRequest request,
-                                               Long courseId) {
+    public Map<String, Object> passedPassedTasksStats(HttpServletRequest request,
+                                                      Long courseId) {
 
-        Map<String, Object> labStats = new HashMap<>();
+        Map<String, Object> passedTaskStats = new HashMap<>();
 
         Long studentId = educationUtils.getStudentId(request, courseId);
         Integer tasksCount = taskRepository.countTaskByCourseId(courseId);
 
-        labStats.put("tasks_count", tasksCount);
-        labStats.put("laboratory_works", getStudentLaboratoryWorks(request, courseId));
+        passedTaskStats.put("tasks_count", tasksCount);
+        passedTaskStats.put("passed_tasks", getStudentPassedTasks(request, courseId));
 
-        return labStats;
+        return passedTaskStats;
     }
 
-    public CommonResponse addLaboratoryWork(HttpServletRequest request,
-                                            LaboratoryWork laboratoryWork,
-                                            Long courseId,
-                                            Long taskId) {
+    public CommonResponse addPassedTask(HttpServletRequest request,
+                                        PassedTask passedTask,
+                                        Long courseId,
+                                        Long taskId) {
         Long studentId = jwtService.getStudentId(request);
         Student student = studentRepository.findById(studentId).get();
 
         Task task = taskRepository.findById(taskId).get();
 
-        laboratoryWork.setTask(task);
-        laboratoryWork.setScore(null);
-        laboratoryWork.setIsPassed(false);
-        laboratoryWork.setStudent(student);
+        passedTask.setTask(task);
+        passedTask.setPoint(null);
+        passedTask.setIsAssessed(false);
+        passedTask.setStudent(student);
 
-        laboratoryWorkRepository.save(laboratoryWork);
+        passedTaskRepository.save(passedTask);
         return new CommonResponse(true);
     }
 
-    public CommonResponse addLabFile(HttpServletRequest request,
-                                     MultipartFile file,
-                                     Long labId,
-                                     Long courseId,
-                                     Long taskId) throws IOException {
+    public CommonResponse addPassedTaskFile(HttpServletRequest request,
+                                            MultipartFile file,
+                                            Long passedTaskId,
+                                            Long courseId,
+                                            Long taskId) throws IOException {
 
         Long studentId = educationUtils.getStudentId(request, courseId);
         Student student = studentRepository.findById(studentId).get();
 
         Task task = taskRepository.findById(taskId).get();
 
-        LaboratoryWork laboratoryWork = laboratoryWorkRepository.findById(labId).get();
+        PassedTask passedTask = passedTaskRepository.findById(passedTaskId).get();
 
         String educatorName = educatorRepository.findEducatorNameByCourseId(courseId).replace(",","");
 
@@ -147,12 +147,12 @@ public class StudentService {
                 "\\Students\\" + student.getFirstname() + student.getLastname() +
                 "\\Labs\\";
 
-        laboratoryWork.setTitle(path + file.getOriginalFilename());
-        laboratoryWork.setTask(task);
-        laboratoryWork.setScore(null);
-        laboratoryWork.setIsPassed(false);
-        laboratoryWork.setStudent(student);
-        laboratoryWorkRepository.save(laboratoryWork);
+        passedTask.setReference(path + file.getOriginalFilename());
+        passedTask.setTask(task);
+        passedTask.setPoint(null);
+        passedTask.setIsAssessed(false);
+        passedTask.setStudent(student);
+        passedTaskRepository.save(passedTask);
 
 
         Path filePath = Paths.get(path, file.getOriginalFilename());
@@ -171,11 +171,12 @@ public class StudentService {
 
     }
 
-    public CommonResponse createProfile(HttpServletRequest request, Student student) {
+    public Student createProfile(HttpServletRequest request, Student student) {
         UserEntity user = jwtService.getUserByJwt(request);
         student.setUser(user);
+        student.setRegistrationDate(Timestamp.valueOf(LocalDateTime.now()));
         studentRepository.save(student);
-        return new CommonResponse(true);
+        return student;
     }
 
     public CommonResponse joinCourse(HttpServletRequest request, Long courseId) {
