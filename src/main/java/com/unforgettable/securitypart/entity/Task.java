@@ -12,7 +12,7 @@ import lombok.ToString;
 import java.util.List;
 
 @Entity
-@Table(name = "lw_task")
+@Table(name = "task")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,6 +24,7 @@ public class Task {
     private Long id;
 
     @Column(name = "reference")
+    @JsonIgnore
     private String reference;
 
     @Column(name = "title")
@@ -32,9 +33,9 @@ public class Task {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "max_score")
-    @JsonProperty("max_score")
-    private Float maxScore;
+    @Column(name = "max_point")
+    @JsonProperty("max_point")
+    private Float maxPoint;
 
     @ManyToOne
     @JoinColumn(name = "course_id")
@@ -45,7 +46,7 @@ public class Task {
     @OneToMany(mappedBy = "task")
     @JsonBackReference
     @JsonIgnore
-    private List<LaboratoryWork> laboratoryWorks;
+    private List<PassedTask> passedTasks;
 
     public Task(Long id) {
         this.id = id;

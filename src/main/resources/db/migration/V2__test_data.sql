@@ -25,12 +25,12 @@ insert into educator(first_name, last_name, age, email, telegram_contact, user_i
 values ('Kostyantin', 'Zhereb', 33, 'koszher@gmail.com', 'zhereb', 1),
        ('Tom', 'Yorkshir', 28, 'tomyork@gmail.com', 'tomyork', 2);
 
-insert into course(title, description, educator_id)
-values ('Back-end', 'Course for Back-end developers', 1),
-       ('Front-end', 'Course for Front-end developers', 2),
-       ('DevOps', 'Course for DevOps', 2);
+insert into course(title, description, educator_id, start_date, end_date)
+values ('Back-end', 'Course for Back-end developers', 1, '2023-01-08 14:30:00', '2023-03-08 14:30:00'),
+       ('Front-end', 'Course for Front-end developers', 2, '2023-01-09 14:30:00', '2023-03-09 14:30:00'),
+       ('DevOps', 'Course for DevOps', 2, '2023-01-10 14:30:00', '2023-03-10 14:30:00');
 
-insert into lw_task(reference, title, description, max_score, course_id)
+insert into task(reference, title, description, max_point, course_id)
 values ('D:\Files\KostyantinZhereb\Back-end\Tasks\task1.docx', 'Database Fundamentals',
         'Learn the basics of database design and management', 8, 1),
        ('D:\Files\KostyantinZhereb\Back-end\Tasks\task2.docx', 'SQL Queries',
@@ -76,7 +76,7 @@ values ('John', 'Doe', 21, 'johndoe@example.com', '@johndoe', 'Group A', 3, '202
        ('Olivia', 'Taylor', 19, 'olivia.taylor@example.com', '@olivia_taylor', 'Group B', 16, '2023-05-06 14:32:00'),
        ('William', 'Brown', 20, 'william.brown@example.com', '@william_brown', 'Group C', 17, '2023-05-07 14:33:00');
 
-insert into laboratory_work(title, github_reference, score, is_passed, comment, student_id, task_id)
+insert into passed_task(reference, github_reference, point, is_assessed, comment, student_id, task_id)
 values ('lab1_john', 'https://github.com/UnforgettableDew/SecurityPart', 8, true, 'great', 1, 1),
        ('lab2_john', 'https://github.com/UnforgettableDew/TestGit', 7, true, 'good', 1, 2),
        ('lab3_john', 'https://github.com/UnforgettableDew/LibraryProject', 7, true, 'well', 1, 3),

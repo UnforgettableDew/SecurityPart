@@ -11,29 +11,29 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Entity
-@Table
+@Table(name = "passed_task")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class LaboratoryWork {
+public class PassedTask {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "title")
-    private String title;
+    @Column(name = "reference")
+    private String reference;
 
     @Column(name = "github_reference")
     @JsonProperty(value = "github_reference")
     private String githubReference;
 
-    @Column(name = "score")
-    private Float score;
+    @Column(name = "point")
+    private Float point;
 
-    @Column(name = "is_passed")
-    private Boolean isPassed;
+    @Column(name = "is_assessed")
+    private Boolean isAssessed;
 
     @Column(name = "comment")
     private String comment;

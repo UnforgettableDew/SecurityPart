@@ -1,7 +1,7 @@
 package com.unforgettable.securitypart.controller;
 
 import com.unforgettable.securitypart.dto.CourseDTO;
-import com.unforgettable.securitypart.dto.LaboratoryWorkDTO;
+import com.unforgettable.securitypart.dto.PassedTaskDTO;
 import com.unforgettable.securitypart.dto.StudentDTO;
 import com.unforgettable.securitypart.entity.Course;
 import com.unforgettable.securitypart.entity.Educator;
@@ -12,7 +12,6 @@ import com.unforgettable.securitypart.service.FileService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
@@ -82,21 +79,21 @@ public class EducatorController {
         return new ResponseEntity<>(educatorService.getStudentsWhoPassedTask(request, courseId, taskId), OK);
     }
 
-    @GetMapping("/courses/{courseId}/student/{studentId}/lab/{labId}")
-    public ResponseEntity<LaboratoryWorkDTO> getStudentLaboratoryWork(HttpServletRequest request,
-                                                                      @PathVariable Long courseId,
-                                                                      @PathVariable Long studentId,
-                                                                      @PathVariable Long labId) {
+    @GetMapping("/courses/{courseId}/student/{studentId}/lab/{passedTaskId}")
+    public ResponseEntity<PassedTaskDTO> getStudentPassedTask(HttpServletRequest request,
+                                                              @PathVariable Long courseId,
+                                                              @PathVariable Long studentId,
+                                                              @PathVariable Long passedTaskId) {
         return new ResponseEntity<>(educatorService.
-                getLaboratoryWorkByCourseAndStudent(request, courseId, studentId, labId), OK);
+                getPassedTaskByCourseAndStudent(request, courseId, studentId, passedTaskId), OK);
     }
 
-    @GetMapping("/courses/{courseId}/student/{studentId}/lab/{labId}/download")
-    public ResponseEntity<Resource> downloadStudentLaboratoryWork(HttpServletRequest request,
-                                                                  @PathVariable Long courseId,
-                                                                  @PathVariable Long studentId,
-                                                                  @PathVariable Long labId) throws MalformedURLException {
-        Resource resource = educatorService.downloadLab(request, courseId, studentId, labId);
+    @GetMapping("/courses/{courseId}/student/{studentId}/lab/{passedTaskId}/download")
+    public ResponseEntity<Resource> downloadStudentPassedTask(HttpServletRequest request,
+                                                              @PathVariable Long courseId,
+                                                              @PathVariable Long studentId,
+                                                              @PathVariable Long passedTaskId) throws MalformedURLException {
+        Resource resource = educatorService.downloadPassedTask(request, courseId, studentId, passedTaskId);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
@@ -110,17 +107,17 @@ public class EducatorController {
     }
 
     @GetMapping("/courses/{courseId}/unchecked-lw")
-    public ResponseEntity<List<StudentDTO>> getStudentsWithUncheckedLabs(HttpServletRequest request,
-                                                                         @PathVariable Long courseId) {
-        return new ResponseEntity<>(educatorService.getStudentsWithUncheckedLabs(request, courseId), OK);
+    public ResponseEntity<List<StudentDTO>> getStudentsWithUncheckedPassedTasks(HttpServletRequest request,
+                                                                                @PathVariable Long courseId) {
+        return new ResponseEntity<>(educatorService.getStudentsWithUncheckedPassedTasks(request, courseId), OK);
     }
 
-    @GetMapping("/courses/{courseId}/student/{studentId}/lab/{labId}/commits")
-    public ResponseEntity<List<Object>> getStudentLabCommits(HttpServletRequest request,
-                                                             @PathVariable Long courseId,
-                                                             @PathVariable Long studentId,
-                                                             @PathVariable Long labId) {
-        return new ResponseEntity<>(educatorService.getCommitList(request, courseId, studentId, labId), OK);
+    @GetMapping("/courses/{courseId}/student/{studentId}/lab/{passedTaskId}/commits")
+    public ResponseEntity<List<Object>> getStudentPassedTaskCommits(HttpServletRequest request,
+                                                                    @PathVariable Long courseId,
+                                                                    @PathVariable Long studentId,
+                                                                    @PathVariable Long passedTaskId) {
+        return new ResponseEntity<>(educatorService.getCommitList(request, courseId, studentId, passedTaskId), OK);
     }
 
     @PostMapping("/course/create")

@@ -1,14 +1,14 @@
 package com.unforgettable.securitypart.service;
 
 import com.unforgettable.securitypart.dto.CourseDTO;
-import com.unforgettable.securitypart.dto.LaboratoryWorkDTO;
+import com.unforgettable.securitypart.dto.PassedTaskDTO;
 import com.unforgettable.securitypart.dto.StudentDTO;
 import com.unforgettable.securitypart.dto.TaskDTO;
 import com.unforgettable.securitypart.entity.Course;
 import com.unforgettable.securitypart.entity.Educator;
 import com.unforgettable.securitypart.entity.Task;
 import com.unforgettable.securitypart.entity.UserEntity;
-import com.unforgettable.securitypart.exception.NoLaboratoryWorkException;
+import com.unforgettable.securitypart.exception.NoPassedTaskException;
 import com.unforgettable.securitypart.exception.NoSuchStudentOnCourseException;
 import com.unforgettable.securitypart.feign.GithubFeign;
 import com.unforgettable.securitypart.model.CommonResponse;
@@ -19,8 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -28,14 +26,13 @@ import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.spi.ResourceBundleProvider;
 
 @Service
 public class EducatorService {
     private final CourseRepository courseRepository;
     private final EducatorRepository educatorRepository;
     private final StudentRepository studentRepository;
-    private final LaboratoryWorkRepository laboratoryWorkRepository;
+    private final PassedTaskRepository passedTaskRepository;
     private final TaskRepository taskRepository;
     private final JwtService jwtService;
     private final GithubFeign githubFeign;
@@ -45,7 +42,7 @@ public class EducatorService {
     public EducatorService(CourseRepository courseRepository,
                            EducatorRepository educatorRepository,
                            StudentRepository studentRepository,
-                           LaboratoryWorkRepository laboratoryWorkRepository,
+                           PassedTaskRepository passedTaskRepository,
                            TaskRepository taskRepository,
                            JwtService jwtService,
                            GithubFeign githubFeign,
@@ -53,7 +50,7 @@ public class EducatorService {
         this.courseRepository = courseRepository;
         this.educatorRepository = educatorRepository;
         this.studentRepository = studentRepository;
-        this.laboratoryWorkRepository = laboratoryWorkRepository;
+        this.passedTaskRepository = passedTaskRepository;
         this.taskRepository = taskRepository;
         this.jwtService = jwtService;
         this.githubFeign = githubFeign;
@@ -98,14 +95,14 @@ public class EducatorService {
         List<StudentDTO> students = studentRepository.findStudentsByCourseIdAndEducatorId(courseId, educatorId);
 
         for (StudentDTO student : students) {
-            List<LaboratoryWorkDTO> laboratoryWorks = laboratoryWorkRepository.
-                    findLaboratoryWorksByStudentIdAndCourseId(student.getId(), courseId);
+            List<PassedTaskDTO> passedTasks = passedTaskRepository.
+                    findPassedTasksByStudentIdAndCourseId(student.getId(), courseId);
 
-            laboratoryWorks.forEach(laboratoryWorkDTO ->
-                    laboratoryWorkDTO.setTask(taskRepository.
-                            findTaskByLaboratoryWorkId(laboratoryWorkDTO.getId())));
+            passedTasks.forEach(passedTaskDTO ->
+                    passedTaskDTO.setTask(taskRepository.
+                            findTaskByPassedTaskId(passedTaskDTO.getId())));
 
-            student.setLaboratoryWorks(laboratoryWorks);
+            student.setPassedTasks(passedTasks);
         }
         return students;
     }
@@ -121,13 +118,13 @@ public class EducatorService {
             throw new NoSuchStudentOnCourseException("There is no student with id = " + studentId +
                     " on course with id = " + courseId);
 
-        List<LaboratoryWorkDTO> laboratoryWorks = laboratoryWorkRepository.
-                findLaboratoryWorksByStudentIdAndCourseId(studentId, courseId);
+        List<PassedTaskDTO> passedTasks = passedTaskRepository.
+                findPassedTasksByStudentIdAndCourseId(studentId, courseId);
 
-        laboratoryWorks.forEach(laboratoryWorkDTO ->
-                laboratoryWorkDTO.setTask(taskRepository.
-                        findTaskByLaboratoryWorkId(laboratoryWorkDTO.getId())));
-        student.setLaboratoryWorks(laboratoryWorks);
+        passedTasks.forEach(passedTaskDTO ->
+                passedTaskDTO.setTask(taskRepository.
+                        findTaskByPassedTaskId(passedTaskDTO.getId())));
+        student.setPassedTasks(passedTasks);
         return student;
     }
 
@@ -140,37 +137,37 @@ public class EducatorService {
 
         List<StudentDTO> students = studentRepository.findStudentsWhoPassedTask(courseId, taskId);
         for (StudentDTO student : students) {
-            LaboratoryWorkDTO laboratoryWork = laboratoryWorkRepository
-                    .findLaboratoryWorkByStudentIdCourseIdTaskId(student.getId(), courseId, taskId);
+            PassedTaskDTO passedTask = passedTaskRepository
+                    .findPassedTaskByStudentIdCourseIdTaskId(student.getId(), courseId, taskId);
 
-            laboratoryWork.setTask(taskRepository
-                    .findTaskByLaboratoryWorkId(laboratoryWork.getId()));
+            passedTask.setTask(taskRepository
+                    .findTaskByPassedTaskId(passedTask.getId()));
 
-            student.addLaboratoryWork(laboratoryWork);
+            student.addPassedTask(passedTask);
         }
         return students;
     }
 
-    public LaboratoryWorkDTO getLaboratoryWorkByCourseAndStudent(HttpServletRequest request,
-                                                                 Long courseId,
-                                                                 Long studentId,
-                                                                 Long labId) {
+    public PassedTaskDTO getPassedTaskByCourseAndStudent(HttpServletRequest request,
+                                                         Long courseId,
+                                                         Long studentId,
+                                                         Long passedTaskId) {
         Long educatorId = educationUtils.getEducatorId(request, courseId);
 
         List<Long> studentCourseIdList = studentRepository.findStudentsIdByCourse(courseId);
 //
         for (Long studentCourseId : studentCourseIdList) {
             if (studentCourseId.equals(studentId)) {
-                LaboratoryWorkDTO laboratoryWork = laboratoryWorkRepository
-                        .findLaboratoryWorksByStudentIdAndCourseIdAndLWId(
+                PassedTaskDTO passedTask = passedTaskRepository
+                        .findPassedTasksByStudentIdAndCourseIdAndLWId(
                                 studentId,
                                 courseId,
-                                labId);
-                if (laboratoryWork == null)
-                    throw new NoLaboratoryWorkException("No such laboratory work with id = " + labId
+                                passedTaskId);
+                if (passedTask == null)
+                    throw new NoPassedTaskException("No such passed task with id = " + passedTaskId
                             + " on course with id = " + courseId + " and student id = " + studentId);
-                laboratoryWork.setTask(taskRepository.findTaskByLaboratoryWorkId(labId));
-                return laboratoryWork;
+                passedTask.setTask(taskRepository.findTaskByPassedTaskId(passedTaskId));
+                return passedTask;
             }
         }
         throw new NoSuchStudentOnCourseException("There is no student with id = " + studentId +
@@ -185,35 +182,35 @@ public class EducatorService {
         Integer tasksCount = taskRepository.countTaskByCourseId(courseId);
 
         List<TaskDTO> tasks = taskRepository.findTasksByCourseId(courseId);
-        List<LaboratoryWorkDTO> laboratoryWorks = new ArrayList<>();
+        List<PassedTaskDTO> passedTasks = new ArrayList<>();
 
         for (TaskDTO task : tasks) {
-            LaboratoryWorkDTO laboratoryWork = new LaboratoryWorkDTO(laboratoryWorkRepository
+            PassedTaskDTO passedTask = new PassedTaskDTO(passedTaskRepository
                     .avgScoreForLWByCourseAndTask(courseId, task.getId()));
-            laboratoryWork.setTask(task);
-            laboratoryWork.setStudentsCount(studentRepository.countStudentsByTaskId(task.getId()));
-            laboratoryWorks.add(laboratoryWork);
+            passedTask.setTask(task);
+            passedTask.setStudentsCount(studentRepository.countStudentsByTaskId(task.getId()));
+            passedTasks.add(passedTask);
         }
 
-        stats.put("total_laboratory_works_count", studentsCount * tasksCount);
-        stats.put("laboratory_works", laboratoryWorks);
+        stats.put("total_tasks_count", studentsCount * tasksCount);
+        stats.put("passed_tasks", passedTasks);
         return stats;
     }
 
-    public List<StudentDTO> getStudentsWithUncheckedLabs(HttpServletRequest request,
-                                                         Long courseId) {
+    public List<StudentDTO> getStudentsWithUncheckedPassedTasks(HttpServletRequest request,
+                                                                Long courseId) {
         Long educatorId = educationUtils.getEducatorId(request, courseId);
 
         List<StudentDTO> students = studentRepository.findStudentWithUncheckedLabs(courseId);
 
         for (StudentDTO student : students) {
-            List<LaboratoryWorkDTO> laboratoryWorks = laboratoryWorkRepository.
+            List<PassedTaskDTO> passedTasks = passedTaskRepository.
                     findUncheckedLWByStudentAndCourse(student.getId(), courseId);
 
-            laboratoryWorks.forEach(laboratoryWorkDTO ->
-                    laboratoryWorkDTO.setTask(taskRepository.
-                            findTaskByLaboratoryWorkId(laboratoryWorkDTO.getId())));
-            student.setLaboratoryWorks(laboratoryWorks);
+            passedTasks.forEach(passedTaskDTO ->
+                    passedTaskDTO.setTask(taskRepository.
+                            findTaskByPassedTaskId(passedTaskDTO.getId())));
+            student.setPassedTasks(passedTasks);
         }
 
         return students;
@@ -221,16 +218,16 @@ public class EducatorService {
 
     public List<Object> getCommitList(HttpServletRequest request,
                                       Long courseId, Long studentId,
-                                      Long labId) {
+                                      Long passedTaskId) {
         Long educatorId = educationUtils.getEducatorId(request, courseId);
 
 //        List<Long> studentCourseIdList = studentRepository.findStudentsIdByCourse(courseId);
 //
 //        for (Long studentCourseId : studentCourseIdList) {
 //            if (studentCourseId.equals(studentId)) {
-        String githubReference = laboratoryWorkRepository.findGithubReferenceByLabId(labId, courseId);
+        String githubReference = passedTaskRepository.findGithubReferenceByPassedTaskId(passedTaskId, courseId);
         if (githubReference == null)
-            throw new NoLaboratoryWorkException("No such laboratory work with id = " + labId
+            throw new NoPassedTaskException("No such passed task with id = " + passedTaskId
                     + " on course with id = " + courseId);
         String[] parts = githubReference.split("/");
         String username = parts[parts.length - 2];
@@ -283,25 +280,25 @@ public class EducatorService {
         return new CommonResponse(true);
     }
 
-    public Resource downloadLab(HttpServletRequest request,
-                                Long courseId,
-                                Long studentId,
-                                Long labId) throws MalformedURLException {
+    public Resource downloadPassedTask(HttpServletRequest request,
+                                       Long courseId,
+                                       Long studentId,
+                                       Long passedTaskId) throws MalformedURLException {
         Long educatorId = educationUtils.getEducatorId(request, courseId);
 
         List<Long> studentCourseIdList = studentRepository.findStudentsIdByCourse(courseId);
 //
         for (Long studentCourseId : studentCourseIdList) {
             if (studentCourseId.equals(studentId)) {
-                String laboratoryWorkTitle = laboratoryWorkRepository
-                        .findLaboratoryWorkTitleByStudentIdAndCourseIdAndLWId(
+                String passedTaskTitle = passedTaskRepository
+                        .findPassedTaskTitleByStudentIdAndCourseIdAndPassedTaskId(
                                 studentId,
                                 courseId,
-                                labId);
-                if (laboratoryWorkTitle.isEmpty())
-                    throw new NoLaboratoryWorkException("No such laboratory work with id = " + labId
+                                passedTaskId);
+                if (passedTaskTitle.isEmpty())
+                    throw new NoPassedTaskException("No such passed task with id = " + passedTaskId
                             + " on course with id = " + courseId + " and student id = " + studentId);
-                Path path = Paths.get(laboratoryWorkTitle);
+                Path path = Paths.get(passedTaskTitle);
                 return new UrlResource(path.toUri());
             }
         }

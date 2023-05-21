@@ -15,18 +15,18 @@ public class FileService {
     private final CourseRepository courseRepository;
     private final EducatorRepository educatorRepository;
     private final StudentRepository studentRepository;
-    private final LaboratoryWorkRepository laboratoryWorkRepository;
+    private final PassedTaskRepository passedTaskRepository;
     private final TaskRepository taskRepository;
 
     public FileService(CourseRepository courseRepository,
                        EducatorRepository educatorRepository,
                        StudentRepository studentRepository,
-                       LaboratoryWorkRepository laboratoryWorkRepository,
+                       PassedTaskRepository passedTaskRepository,
                        TaskRepository taskRepository) {
         this.courseRepository = courseRepository;
         this.educatorRepository = educatorRepository;
         this.studentRepository = studentRepository;
-        this.laboratoryWorkRepository = laboratoryWorkRepository;
+        this.passedTaskRepository = passedTaskRepository;
         this.taskRepository = taskRepository;
     }
 

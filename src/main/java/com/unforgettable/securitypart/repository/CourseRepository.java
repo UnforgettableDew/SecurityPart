@@ -1,17 +1,13 @@
 package com.unforgettable.securitypart.repository;
 
-import com.unforgettable.securitypart.dto.LaboratoryWorkDTO;
-import com.unforgettable.securitypart.dto.StudentDTO;
-import com.unforgettable.securitypart.dto.TaskDTO;
 import com.unforgettable.securitypart.entity.Course;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
-@RestController
+@Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
 
     List<Course> findCoursesByEducatorId(Long id);

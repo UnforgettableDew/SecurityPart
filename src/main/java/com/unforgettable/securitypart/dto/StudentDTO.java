@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.unforgettable.securitypart.entity.Course;
-import com.unforgettable.securitypart.entity.LaboratoryWork;
+import com.unforgettable.securitypart.entity.PassedTask;
 import com.unforgettable.securitypart.entity.Student;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -46,8 +46,8 @@ public class StudentDTO {
     private String telegramContact;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<String> courses;
-    @JsonProperty(value = "laboratory_works")
-    private List<LaboratoryWorkDTO> laboratoryWorks;
+    @JsonProperty(value = "passed_tasks")
+    private List<PassedTaskDTO> passedTasks;
 
     public StudentDTO(Student student) {
         this.id = student.getId();
@@ -61,8 +61,8 @@ public class StudentDTO {
         this.courses = student.getCourses()
                 .stream()
                 .map(Course::getTitle).toList();
-        this.laboratoryWorks=student.getLaboratoryWorks()
-                .stream().map(LaboratoryWorkDTO::new).toList();
+        this.passedTasks =student.getPassedTasks()
+                .stream().map(PassedTaskDTO::new).toList();
     }
 
     public StudentDTO(Long id,
@@ -81,7 +81,7 @@ public class StudentDTO {
         this.age = age;
         this.registrationDate = registrationDate;
         this.telegramContact = telegramContact;
-        this.laboratoryWorks = new ArrayList<>();
+        this.passedTasks = new ArrayList<>();
     }
 
     public StudentDTO(Long studentId,
@@ -92,15 +92,15 @@ public class StudentDTO {
         this.firstname = firstname;
         this.lastname = lastname;
         this.group = group;
-        this.laboratoryWorks = new ArrayList<>();
+        this.passedTasks = new ArrayList<>();
     }
 
 
-    public void addLaboratoryWork(LaboratoryWork laboratoryWork) {
-        laboratoryWorks.add(new LaboratoryWorkDTO(laboratoryWork));
+    public void addPassedTask(PassedTask passedTask) {
+        passedTasks.add(new PassedTaskDTO(passedTask));
     }
 
-    public void addLaboratoryWork(LaboratoryWorkDTO laboratoryWork) {
-        laboratoryWorks.add(laboratoryWork);
+    public void addPassedTask(PassedTaskDTO laboratoryWork) {
+        passedTasks.add(laboratoryWork);
     }
 }

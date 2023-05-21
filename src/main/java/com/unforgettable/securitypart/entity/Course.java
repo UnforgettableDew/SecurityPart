@@ -7,7 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.sql.Timestamp;
 import java.util.List;
+
 @Entity
 @Table
 @Data
@@ -25,6 +27,12 @@ public class Course {
 
     @Column(name = "description")
     private String description;
+
+    @Column(name = "start_date")
+    private Timestamp startDate;
+
+    @Column(name = "end_date")
+    private Timestamp endDate;
 
     @ManyToOne
     @JoinColumn(name = "educator_id")

@@ -23,17 +23,17 @@ public class TaskDTO {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String description;
-    @JsonProperty("max_score")
-    private Float maxScore;
+    @JsonProperty("max_point")
+    private Float maxPoint;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<LaboratoryWorkDTO> laboratoryWorks;
+    private List<PassedTaskDTO> laboratoryWorks;
 
     public TaskDTO(Task task) {
         this.id = task.getId();
         this.title = task.getTitle();
         this.description = task.getDescription();
-        this.maxScore = task.getMaxScore();
+        this.maxPoint = task.getMaxPoint();
     }
 
 //    public TaskDTO(Long id, Float maxScore) {
@@ -41,9 +41,9 @@ public class TaskDTO {
 //        this.maxScore = maxScore;
 //    }
 
-    public TaskDTO(Long id, String title, Float maxScore) {
+    public TaskDTO(Long id, String title, Float maxPoint) {
         this.id = id;
         this.title = title;
-        this.maxScore = maxScore;
+        this.maxPoint = maxPoint;
     }
 }
