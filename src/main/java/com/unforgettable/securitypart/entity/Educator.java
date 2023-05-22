@@ -12,7 +12,7 @@ import lombok.ToString;
 import java.util.List;
 
 @Entity
-@Table
+@Table(name = "educator")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

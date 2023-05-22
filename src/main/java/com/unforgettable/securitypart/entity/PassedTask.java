@@ -10,6 +10,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.sql.Timestamp;
+
 @Entity
 @Table(name = "passed_task")
 @Data
@@ -37,6 +39,9 @@ public class PassedTask {
 
     @Column(name = "comment")
     private String comment;
+
+    @Column(name = "submission_date")
+    private Timestamp submissionDate;
 
     @ManyToOne
     @JoinColumn(name = "student_id")

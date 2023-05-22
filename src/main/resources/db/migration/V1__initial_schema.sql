@@ -50,6 +50,8 @@ create table task
     description varchar(255),
     max_point   float,
     course_id   bigint,
+    start_date  timestamp,
+    end_date    timestamp,
     foreign key (course_id) references course (id)
         on delete cascade
         on update cascade
@@ -79,6 +81,7 @@ create table passed_task
     point            float,
     is_assessed      boolean,
     comment          varchar(255),
+    submission_date timestamp,
     student_id       bigint,
     task_id          bigint,
     foreign key (task_id) references task (id)

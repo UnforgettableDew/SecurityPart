@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 @Entity
@@ -36,6 +37,12 @@ public class Task {
     @Column(name = "max_point")
     @JsonProperty("max_point")
     private Float maxPoint;
+
+    @Column(name = "start_date")
+    private Timestamp startDate;
+
+    @Column(name = "end_date")
+    private Timestamp endDate;
 
     @ManyToOne
     @JoinColumn(name = "course_id")

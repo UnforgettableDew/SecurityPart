@@ -13,7 +13,7 @@ import java.sql.Timestamp;
 import java.util.List;
 
 @Entity
-@Table
+@Table(name = "student")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

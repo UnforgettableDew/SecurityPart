@@ -16,7 +16,7 @@ public interface PassedTaskRepository extends JpaRepository<PassedTask, Long> {
     List<PassedTaskDTO> findPassedTasksByStudentIdAndCourseId(Long studentId, Long courseId);
 
     @Query("select new com.unforgettable.securitypart.dto.PassedTaskDTO(" +
-            "lw.id, lw.reference, lw.githubReference, lw.point, lw.isAssessed, lw.comment) from PassedTask lw " +
+            "lw.id, lw.reference, lw.githubReference, lw.point, lw.isAssessed, lw.comment, lw.submissionDate) from PassedTask lw " +
             "where lw.student.id=:studentId and lw.task.course.id=:courseId and lw.id=:passedTaskId")
     PassedTaskDTO findPassedTasksByStudentIdAndCourseIdAndLWId(Long studentId,
                                                                Long courseId,

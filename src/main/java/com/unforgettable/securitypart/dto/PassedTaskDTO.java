@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.sql.Timestamp;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,6 +29,10 @@ public class PassedTaskDTO {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String comment;
+
+    @JsonProperty("submission_date")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Timestamp submissionDate;
     private TaskDTO task;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String course;
@@ -41,6 +47,7 @@ public class PassedTaskDTO {
         this.githubReference = passedTask.getGithubReference();
         this.task = new TaskDTO(passedTask.getTask());
         this.point = passedTask.getPoint();
+        this.submissionDate = passedTask.getSubmissionDate();
         this.isAssessed = passedTask.getIsAssessed();
         this.course = passedTask.getTask().getCourse().getTitle();
     }
@@ -63,13 +70,15 @@ public class PassedTaskDTO {
                          String githubReference,
                          Float point,
                          Boolean isAssessed,
-                         String comment) {
+                         String comment,
+                         Timestamp submissionDate) {
         this.id = id;
         this.reference = reference;
         this.githubReference = githubReference;
         this.point = point;
         this.isAssessed = isAssessed;
         this.comment = comment;
+        this.submissionDate = submissionDate;
     }
 
     public PassedTaskDTO(Float point) {
