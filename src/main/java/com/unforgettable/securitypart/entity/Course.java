@@ -53,6 +53,10 @@ public class Course {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<Student> students;
 
+    @OneToMany(mappedBy = "course")
+    @JsonIgnore
+    private List<TypicalMistake> typicalMistakes;
+
     public Course(Long id, String title, String description) {
         this.id = id;
         this.title = title;

@@ -80,8 +80,9 @@ create table passed_task
     github_reference varchar(128),
     point            float,
     is_assessed      boolean,
-    comment          varchar(255),
-    submission_date timestamp,
+    educator_comment  varchar(255),
+    student_comment varchar(255),
+    submission_date  timestamp,
     student_id       bigint,
     task_id          bigint,
     foreign key (task_id) references task (id)
@@ -112,6 +113,6 @@ create table course_student
         on delete cascade
         on update cascade,
     foreign key (course_id) references course (id)
-        on delete cascade
+        on delete no action
         on update cascade
 )

@@ -13,4 +13,8 @@ public interface GithubFeign {
     @GetMapping("/user/{username}/repo/{repositoryName}/all-commits")
     List<Object> getAllCommits(@PathVariable String username,
                                @PathVariable String repositoryName);
+
+    @GetMapping("/user/{username}/repo/{repositoryName}/files")
+    List<Object> getFiles(@PathVariable String username,
+                          @PathVariable String repositoryName);
 }

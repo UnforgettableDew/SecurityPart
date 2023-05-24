@@ -1,6 +1,7 @@
 package com.unforgettable.securitypart.service;
 
 import com.unforgettable.securitypart.entity.UserEntity;
+import com.unforgettable.securitypart.enums.UserRole;
 import com.unforgettable.securitypart.repository.ApplicationUserRepository;
 import com.unforgettable.securitypart.repository.EducatorRepository;
 import com.unforgettable.securitypart.repository.StudentRepository;
@@ -131,5 +132,10 @@ public class JwtService {
         String jwtToken = request.getHeader(HttpHeaders.AUTHORIZATION).substring(7);
         Long userId = getUserIdByJwt(jwtToken);
         return educatorRepository.findEducatorIdByUserId(userId);
+    }
+
+    public String getUserRole(HttpServletRequest request){
+        UserEntity user = getUserByJwt(request);
+        return user.getRole().name().toLowerCase();
     }
 }

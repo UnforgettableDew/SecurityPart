@@ -39,9 +39,11 @@ public class Task {
     private Float maxPoint;
 
     @Column(name = "start_date")
+    @JsonProperty("start_date")
     private Timestamp startDate;
 
     @Column(name = "end_date")
+    @JsonProperty("end_date")
     private Timestamp endDate;
 
     @ManyToOne

@@ -1,10 +1,10 @@
 package com.unforgettable.securitypart.service;
 
-import com.unforgettable.securitypart.dto.CourseDTO;
-import com.unforgettable.securitypart.dto.PassedTaskDTO;
+import com.unforgettable.securitypart.dto.*;
 import com.unforgettable.securitypart.entity.*;
 import com.unforgettable.securitypart.exception.NoPassedTaskException;
-import com.unforgettable.securitypart.model.CommonResponse;
+import com.unforgettable.securitypart.exception.NoSuchStudentOnCourseException;
+import com.unforgettable.securitypart.model.response.CommonResponse;
 import com.unforgettable.securitypart.repository.*;
 import com.unforgettable.securitypart.utils.EducationUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,8 +31,10 @@ public class StudentService {
     private final PassedTaskRepository passedTaskRepository;
     private final TaskRepository taskRepository;
     private final EducatorRepository educatorRepository;
+    private final TypicalMistakeRepository typicalMistakeRepository;
     private final JwtService jwtService;
     private final EducationUtils educationUtils;
+    private final FileService fileService;
 
     @Autowired
     public StudentService(StudentRepository studentRepository,
@@ -40,23 +42,47 @@ public class StudentService {
                           PassedTaskRepository passedTaskRepository,
                           TaskRepository taskRepository,
                           EducatorRepository educatorRepository,
+                          TypicalMistakeRepository typicalMistakeRepository,
                           JwtService jwtService,
-                          EducationUtils educationUtils) {
+                          EducationUtils educationUtils, FileService fileService) {
         this.studentRepository = studentRepository;
         this.courseRepository = courseRepository;
         this.passedTaskRepository = passedTaskRepository;
         this.taskRepository = taskRepository;
         this.educatorRepository = educatorRepository;
+        this.typicalMistakeRepository = typicalMistakeRepository;
         this.jwtService = jwtService;
         this.educationUtils = educationUtils;
+        this.fileService = fileService;
+    }
+
+    public StudentDTO getProfile(HttpServletRequest request) {
+        Long studentId = jwtService.getStudentId(request);
+        return studentRepository.findStudentProfileById(studentId);
     }
 
     public List<CourseDTO> getStudentCourses(HttpServletRequest request) {
         Long studentId = jwtService.getStudentId(request);
 
-        return courseRepository.findCoursesByStudentId(studentId)
-                .stream()
-                .map(CourseDTO::new).toList();
+        return courseRepository.findCoursesByStudentId(studentId);
+    }
+
+    public CourseDTO getStudentCourse(HttpServletRequest request, Long courseId) {
+        Long studentId = educationUtils.getStudentId(request, courseId);
+
+        return new CourseDTO(courseRepository.findCourseByStudentId(studentId, courseId));
+    }
+
+    public TaskDTO getTaskByCourse(HttpServletRequest request,
+                                   Long courseId, Long taskId) {
+        Long studentId = educationUtils.getStudentId(request, courseId);
+        return taskRepository.findFullTaskInfoById(taskId);
+    }
+
+    public List<TypicalMistakeDTO> getCourseTypicalMistakes(HttpServletRequest request,
+                                                            Long courseId) {
+        Long studentId = educationUtils.getStudentId(request, courseId);
+        return typicalMistakeRepository.findTypicalMistakesByCourseId(courseId);
     }
 
 
@@ -75,26 +101,26 @@ public class StudentService {
 
     public PassedTaskDTO getPassedTaskByCourse(HttpServletRequest request,
                                                Long courseId,
-                                               Long passedTaskId) {
+                                               Long taskId) {
         Long studentId = educationUtils.getStudentId(request, courseId);
 
         PassedTaskDTO passedTask = passedTaskRepository
-                .findPassedTasksByStudentIdAndCourseIdAndLWId(
+                .findPassedTasksByStudentIdAndCourseIdAndTaskId(
                         studentId,
                         courseId,
-                        passedTaskId);
+                        taskId);
 
         if (passedTask == null)
-            throw new NoPassedTaskException("No such passed task with id = " + passedTaskId
+            throw new NoPassedTaskException("No such passed task with task id = " + taskId
                     + " on course with id = " + courseId);
 
-        passedTask.setTask(taskRepository.findTaskByPassedTaskId(passedTaskId));
+        passedTask.setTask(taskRepository.findFullTaskInfoById(taskId));
 
         return passedTask;
     }
 
-    public Map<String, Object> passedPassedTasksStats(HttpServletRequest request,
-                                                      Long courseId) {
+    public Map<String, Object> passedTasksStats(HttpServletRequest request,
+                                                Long courseId) {
 
         Map<String, Object> passedTaskStats = new HashMap<>();
 
@@ -120,25 +146,25 @@ public class StudentService {
         passedTask.setPoint(null);
         passedTask.setIsAssessed(false);
         passedTask.setStudent(student);
+        passedTask.setSubmissionDate(Timestamp.valueOf(LocalDateTime.now()));
 
         passedTaskRepository.save(passedTask);
         return new CommonResponse(true);
     }
 
-    public CommonResponse addPassedTaskFile(HttpServletRequest request,
-                                            MultipartFile file,
-                                            Long passedTaskId,
-                                            Long courseId,
-                                            Long taskId) throws IOException {
+    public CommonResponse uploadPassedTaskFile(HttpServletRequest request,
+                                               MultipartFile file,
+                                               Long courseId,
+                                               Long taskId) throws IOException {
 
         Long studentId = educationUtils.getStudentId(request, courseId);
         Student student = studentRepository.findById(studentId).get();
 
         Task task = taskRepository.findById(taskId).get();
 
-        PassedTask passedTask = passedTaskRepository.findById(passedTaskId).get();
+        PassedTask passedTask = passedTaskRepository.findPassedTaskByTaskIdAndStudentId(taskId, studentId);
 
-        String educatorName = educatorRepository.findEducatorNameByCourseId(courseId).replace(",","");
+        String educatorName = educatorRepository.findEducatorNameByCourseId(courseId).replace(",", "");
 
         String course = courseRepository.findCourseTitleById(courseId);
 
@@ -161,14 +187,39 @@ public class StudentService {
     }
 
     public Resource downloadTask(HttpServletRequest request,
-                                Long courseId,
-                                Long taskId) throws MalformedURLException {
+                                 Long courseId,
+                                 Long taskId) throws MalformedURLException {
         Long studentId = educationUtils.getStudentId(request, courseId);
         Task task = taskRepository.findById(taskId).get();
 
         Path path = Paths.get(task.getReference());
         return new UrlResource(path.toUri());
 
+    }
+
+    public Resource downloadPassedTask(HttpServletRequest request,
+                                       Long courseId,
+                                       Long taskId) throws MalformedURLException {
+        Long studentId = educationUtils.getStudentId(request, courseId);
+
+        List<Long> studentCourseIdList = studentRepository.findStudentsIdByCourse(courseId);
+//
+        for (Long studentCourseId : studentCourseIdList) {
+            if (studentCourseId.equals(studentId)) {
+                String passedTaskReference = passedTaskRepository
+                        .findReferenceByStudentIdAndCourseIdAndTaskId(
+                                studentId,
+                                courseId,
+                                taskId);
+                if (passedTaskReference.isEmpty())
+                    throw new NoPassedTaskException("No such passed task with task id = " + taskId
+                            + " on course with id = " + courseId + " and student id = " + studentId);
+                Path path = Paths.get(passedTaskReference);
+                return new UrlResource(path.toUri());
+            }
+        }
+        throw new NoSuchStudentOnCourseException("There is no student with id = " + studentId +
+                " on course with id = " + courseId);
     }
 
     public Student createProfile(HttpServletRequest request, Student student) {
@@ -185,6 +236,7 @@ public class StudentService {
         Course course = courseRepository.findById(courseId).get();
 
         student.addCourse(course);
+        fileService.createStudentDirectories(course, student);
 
         studentRepository.save(student);
         return new CommonResponse(true);
@@ -195,6 +247,18 @@ public class StudentService {
         Student student = studentRepository.findById(studentId).get();
         student.updateStudent(updatedStudent);
         studentRepository.save(student);
+        return new CommonResponse(true);
+    }
+
+    public CommonResponse deletePassedTask(HttpServletRequest request,
+                                           Long courseId, Long taskId) {
+        Long studentId = educationUtils.getStudentId(request, courseId);
+        PassedTask passedTask = passedTaskRepository.
+                findByCourseIdStudentIdTaskId(courseId, studentId, taskId);
+        if (passedTask == null)
+            throw new NoPassedTaskException("No such passed task with id = " + taskId
+                    + " on course with id = " + courseId);
+        passedTaskRepository.delete(passedTask);
         return new CommonResponse(true);
     }
 }

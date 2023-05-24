@@ -37,8 +37,11 @@ public class PassedTask {
     @Column(name = "is_assessed")
     private Boolean isAssessed;
 
-    @Column(name = "comment")
-    private String comment;
+    @Column(name = "educator_comment")
+    private String educatorComment;
+
+    @Column(name = "student_comment")
+    private String studentComment;
 
     @Column(name = "submission_date")
     private Timestamp submissionDate;

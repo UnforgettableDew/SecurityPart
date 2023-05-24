@@ -63,7 +63,7 @@ public class SecurityConfig {
                     .logoutSuccessHandler(((request, response, authentication) -> SecurityContextHolder.clearContext()));
 //                .and()
 //                .oauth2Login().userInfoEndpoint().userService(oAuth2UserService);
-        httpSecurity.cors();
+        httpSecurity.cors().disable();
         return httpSecurity.build();
     }
 
